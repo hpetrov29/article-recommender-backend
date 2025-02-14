@@ -151,7 +151,7 @@ func toCoreUpdateUser(app AppUpdateUser) (user.UpdateUser, error) {
 // Validate checks the data in the model is considered clean.
 func (app AppUpdateUser) Validate() error {
 	if err := validate.Check(app); err != nil {
-		return fmt.Errorf("validate: %w", err)
+		return err
 	}
 
 	return nil

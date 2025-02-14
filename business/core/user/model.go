@@ -35,7 +35,6 @@ type NewUser struct {
 // UpdateUser contains information required to update a user.
 // Meant to be used at the service/core layer
 type UpdateUser struct {
-
 	Name *string
 	Email *mail.Address
 	Roles []Role
