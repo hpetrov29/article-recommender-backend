@@ -1,0 +1,55 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  api:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    image: golang-api:latest
+    container_name: golang-api
+    environment:
+      DB_USER: "${DB_USER}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      DB_HOST: "${DB_HOST}"
+      DB_NAME: "${DB_NAME}"
+      DB_MAX_IDLE_CONNECTIONS: "${DB_MAX_IDLE_CONNECTIONS}"
+      DB_MAX_OPEN_CONNECTIONS: "${DB_MAX_OPEN_CONNECTIONS}"
+      DB_DISABLE_TLS: "${DB_DISABLE_TLS}"
+      PORT: "${PORT}"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS}"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+    env_file:
+      - .env
+
+networks:
+  backend:
+
+volumes:
+  mysql_data:
