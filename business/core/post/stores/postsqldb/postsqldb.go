@@ -1,6 +1,7 @@
 package postsqldb
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
@@ -9,6 +10,7 @@ import (
 	"github.com/hpetrov29/resttemplate/business/core/post"
 
 	db "github.com/hpetrov29/resttemplate/business/data/dbsql/mysql"
+	"github.com/hpetrov29/resttemplate/business/data/order"
 	"github.com/hpetrov29/resttemplate/internal/logger"
 	"github.com/jmoiron/sqlx"
 )
@@ -115,6 +117,27 @@ func (s *Store) QueryById(ctx context.Context, id string) (post.Post, error) {
 	return post, nil
 }
 
-func (s *Store) GetPosts(ctx context.Context) ([]post.Post, error) {
-	return []post.Post{}, nil
+func (s *Store) Query(ctx context.Context, filter post.QueryFilter, orderBy order.OrderBy, pageNumber int, rowsPerPage int) ([]post.Post, error) {
+	data := map[string]interface{}{
+		"offset":        (pageNumber - 1) * rowsPerPage,
+		"rows_per_page": rowsPerPage,
+	}
+	const q = `
+	SELECT
+	    *
+	FROM
+		posts`
+
+	buf := bytes.NewBufferString(q)
+
+	s.applyFilter(filter, data, buf)
+	s.orderByClause(orderBy, buf)
+	buf.WriteString(" LIMIT :rows_per_page OFFSET :offset")
+
+	var dbPosts []dbPost
+	if err := db.NamedQuerySlice(ctx, s.log, s.db, buf.String(), data, &dbPosts); err != nil {
+		return nil, fmt.Errorf("namedqueryslice: %w", err)
+	}
+
+	return toCorePostSlice(dbPosts), nil
 }

@@ -107,6 +107,8 @@ func NamedExecContext(ctx context.Context, log *logger.Logger, db sqlx.ExtContex
 	return res, nil
 }
 
+/////////////////////////////////////////////////////////////////////
+
 // NamedQueryStruct is a helper function for executing queries that return a
 // single value to be unmarshalled into a struct type where field replacement is necessary.
 func NamedQueryStruct(ctx context.Context, log *logger.Logger, db sqlx.ExtContext, query string, data any, dest any) error {
@@ -182,4 +184,73 @@ func queryString(query string, args any) string {
 	query = strings.ReplaceAll(query, "\n", " ")
 
 	return strings.Trim(query, " ")
+}
+
+/////////////////////////////////////////////////////////////////////
+
+// QuerySlice is a helper function for executing queries that return a
+// collection of data to be unmarshalled into a slice.
+func QuerySlice[T any](ctx context.Context, log *logger.Logger, db sqlx.ExtContext, query string, dest *[]T) error {
+	return namedQuerySlice(ctx, log, db, query, struct{}{}, dest, false)
+}
+
+// NamedQuerySlice is a helper function for executing queries that return a
+// collection of data to be unmarshalled into a slice where field replacement is
+// necessary.
+func NamedQuerySlice[T any](ctx context.Context, log *logger.Logger, db sqlx.ExtContext, query string, data any, dest *[]T) error {
+	return namedQuerySlice(ctx, log, db, query, data, dest, false)
+}
+
+// NamedQuerySliceUsingIn is a helper function for executing queries that return
+// a collection of data to be unmarshalled into a slice where field replacement
+// is necessary. Use this if the query has an IN clause.
+func NamedQuerySliceUsingIn[T any](ctx context.Context, log *logger.Logger, db sqlx.ExtContext, query string, data any, dest *[]T) error {
+	return namedQuerySlice(ctx, log, db, query, data, dest, true)
+}
+
+func namedQuerySlice[T any](ctx context.Context, log *logger.Logger, db sqlx.ExtContext, query string, data any, dest *[]T, withIn bool) error {
+	q := queryString(query, data)
+
+	log.Infoc(ctx, 5, "database.NamedQuerySlice", "query", q)
+
+	var rows *sqlx.Rows
+	var err error
+
+	switch withIn {
+	case true:
+		rows, err = func() (*sqlx.Rows, error) {
+			named, args, err := sqlx.Named(query, data)
+			if err != nil {
+				return nil, err
+			}
+
+			query, args, err := sqlx.In(named, args...)
+			if err != nil {
+				return nil, err
+			}
+
+			query = db.Rebind(query)
+			return db.QueryxContext(ctx, query, args...)
+		}()
+
+	default:
+		rows, err = sqlx.NamedQueryContext(ctx, db, query, data)
+	}
+
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	var slice []T
+	for rows.Next() {
+		v := new(T)
+		if err := rows.StructScan(v); err != nil {
+			return err
+		}
+		slice = append(slice, *v)
+	}
+	*dest = slice
+
+	return nil
 }

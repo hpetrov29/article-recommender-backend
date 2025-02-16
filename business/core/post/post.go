@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hpetrov29/resttemplate/business/data/order"
 	"github.com/hpetrov29/resttemplate/internal/logger"
 )
 
@@ -19,7 +20,7 @@ type Storer interface {
 	Create(ctx context.Context, post Post) (sql.Result, error)
 	Delete(ctx context.Context, post Post) error
 	QueryById(ctx context.Context, id string) (Post, error)
-	GetPosts(ctx context.Context) ([]Post, error)
+	Query(ctx context.Context, filter QueryFilter, orderBy order.OrderBy, pageNumber int, rowsPerPage int) ([]Post, error)
 }
 
 // Core manages the set of APIs for posts api access
@@ -83,7 +84,11 @@ func (c *Core) GetPostById(ctx context.Context, id string) (Post, error) {
 	return post, nil
 }
 
-func (c *Core) GetPosts(ctx context.Context) ([]Post, error) {
-	c.storer.GetPosts(ctx)
-	return []Post{}, nil
+func (c *Core) Query(ctx context.Context, filter QueryFilter, orderBy order.OrderBy, pageNumber int, rowsPerPage int) ([]Post, error) {
+	posts, err := c.storer.Query(ctx, filter, orderBy, pageNumber, rowsPerPage)
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }

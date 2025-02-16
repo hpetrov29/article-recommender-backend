@@ -36,7 +36,7 @@ func Routes(app *web.App, cfg Config) {
 
 	// UNPROTECTED ROUTES
 	app.Handle(http.MethodGet, "/post/{id}", handlers.GetPost)
-	app.Handle(http.MethodGet, "/posts", handlers.GetPosts)
+	app.Handle(http.MethodGet, "/posts", handlers.Query)
 
 	// PROTECTED ROUTES
 	app.Handle(http.MethodPost, "/post", handlers.CreatePost, authenticated)

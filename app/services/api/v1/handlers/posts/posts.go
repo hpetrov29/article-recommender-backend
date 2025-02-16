@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hpetrov29/resttemplate/business/core/post"
+	"github.com/hpetrov29/resttemplate/business/data/page"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
 	"github.com/hpetrov29/resttemplate/internal/web"
 )
@@ -67,7 +68,27 @@ func (h *Handlers) GetPost(ctx context.Context, w http.ResponseWriter, r *http.R
 	return web.Respond(ctx, w, http.StatusOK, post)
 }
 
-func (h *Handlers) GetPosts(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	h.post.GetPosts(ctx)
-	return nil
+func (h *Handlers) Query(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	page, err := page.Parse(r)
+	if err != nil {
+		return web.Respond(ctx, w, http.StatusBadRequest, err)
+	}
+
+	filter, err := parseFilter(r)
+	if err != nil {
+		return web.Respond(ctx, w, http.StatusBadRequest, err)
+	}
+
+	orderBy, err := parseOrder(r)
+	if err != nil {
+		return web.Respond(ctx, w, http.StatusBadRequest, err)
+	}
+
+	posts, err := h.post.Query(ctx, filter, orderBy, page.Number, page.RowsPerPage)
+	if err != nil {
+		return web.Respond(ctx, w, http.StatusInternalServerError, err)
+	}
+
+	return web.Respond(ctx, w, http.StatusOK, posts)
+
 }

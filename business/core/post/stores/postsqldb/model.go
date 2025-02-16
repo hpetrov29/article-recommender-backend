@@ -49,3 +49,12 @@ func toCorePost(dbPost dbPost) post.Post {
 
 	return post
 }
+
+
+func toCorePostSlice(dbProducts []dbPost) []post.Post {
+	prds := make([]post.Post, len(dbProducts))
+	for i, dbPost := range dbProducts {
+		prds[i] = toCorePost(dbPost)
+	}
+	return prds
+}

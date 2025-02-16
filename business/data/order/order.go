@@ -1,6 +1,15 @@
 // Package order provides support for describing the ordering of data.
 package order
 
+import (
+	"errors"
+	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/hpetrov29/resttemplate/internal/validate"
+)
+
 // Set of directions for data ordering.
 const (
 	ASC  = "ASC"
@@ -15,15 +24,45 @@ var directions = map[string]string{
 // =============================================================================
 
 // By represents a field used to order by and direction.
-type By struct {
+type OrderBy struct {
 	Field     string
 	Direction string
 }
 
 // NewBy constructs a new By value with no checks.
-func NewBy(field string, direction string) By {
-	return By{
+func NewBy(field string, direction string) OrderBy {
+	return OrderBy{
 		Field:     field,
 		Direction: direction,
 	}
+}
+
+// =============================================================================
+
+// Parse constructs a order.By value by parsing a string in the form
+// of "field,direction".
+func Parse(r *http.Request, defaultOrder OrderBy) (OrderBy, error) {
+	v := r.URL.Query().Get("orderBy")
+
+	if v == "" {
+		return defaultOrder, nil
+	}
+
+	orderParts := strings.Split(v, ",")
+
+	var by OrderBy
+	switch len(orderParts) {
+	case 1:
+		by = NewBy(strings.Trim(orderParts[0], " "), ASC)
+	case 2:
+		by = NewBy(strings.Trim(orderParts[0], " "), strings.Trim(orderParts[1], " "))
+	default:
+		return OrderBy{}, validate.NewFieldsError(v, errors.New("unknown order field"))
+	}
+
+	if _, exists := directions[by.Direction]; !exists {
+		return OrderBy{}, validate.NewFieldsError(v, fmt.Errorf("unknown direction: %s", by.Direction))
+	}
+
+	return by, nil
 }
