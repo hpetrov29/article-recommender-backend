@@ -3,29 +3,32 @@ package posts
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hpetrov29/resttemplate/business/core/post"
 	"github.com/hpetrov29/resttemplate/internal/validate"
 )
 
 // AppPost represents the contents of a post in the app layer.
 type AppPost struct {
-	Id           	string   	`json:"id"`
+	Id           	uint64   	`json:"id"`
+	UserId       	uint64	 	`json:"userId"`
 	Title        	string   	`json:"title"`
-	Content      	string   	`json:"content"`
-	UserId       	string	 	`json:"userId"`
-	DateCreated  	string   	`json:"dateCreated"`
-	DateUpdated  	string   	`json:"dateUpdated"`
+	Description 	string 		`json:"description"`
+	FrontImage  	string 		`json:"frontImage"`
+	ContentId   	uint64   	`json:"contentId"`
+	CreatedAt   	string   	`json:"createdAt"`
+	UpdatedAt  		string   	`json:"updatedAt"`
 }
 
 func toAppPost(post post.Post) AppPost {
 	return AppPost{
-	Id:  			post.Id.String(),
+	Id:  			post.Id,
+	UserId: 		post.UserId,
 	Title: 			post.Title,
-	Content: 		post.Content,
-	UserId: 		post.UserId.String(),
-	DateCreated: 	post.DateCreated.Format(time.RFC3339),
-	DateUpdated:  	post.DateUpdated.Format(time.RFC3339),
+	Description:	post.Description,
+	FrontImage:		post.FrontImage,
+	ContentId: 		post.ContentId,
+	CreatedAt: 		post.CreatedAt.Format(time.RFC3339),
+	UpdatedAt:  	post.UpdatedAt.Format(time.RFC3339),
 	}
 }
 
@@ -43,19 +46,13 @@ func toAppPosts(posts []post.Post) []AppPost {
 // AppNewUser contains information needed to create a new user.
 type AppNewPost struct {
 	Title            string   	  `json:"title" validate:"required"`
-	Content          string   	  `json:"content" validate:"required"`
-	UserId        	 string 	  
+	Description      string   	  `json:"description" validate:"required"`
 }
 
 func toCoreNewPost(app AppNewPost) (post.NewPost, error) {
-	userId, err := uuid.Parse(app.UserId)
-	if err != nil {
-		return post.NewPost{}, err
-	}
 	post := post.NewPost{
 		Title: app.Title,
-		Content: app.Content,
-		UserId: userId,
+		Description: app.Description,
 	}
 
 	return post, nil

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
+	"github.com/hpetrov29/resttemplate/internal/idgenerator"
 	"github.com/hpetrov29/resttemplate/internal/logger"
 	"github.com/hpetrov29/resttemplate/internal/web"
 	"github.com/jmoiron/sqlx"
@@ -15,8 +16,9 @@ type APIMuxConfig struct {
 	Build    string
 	Shutdown chan os.Signal
 	Log      *logger.Logger
-	Auth	*auth.Auth
+	Auth	 *auth.Auth
 	DB       *sqlx.DB
+	IdGen 	 *idgenerator.IdGenerator
 }
 
 // RouteAdder defines behavior that sets the routes to bind for an instance
@@ -27,9 +29,8 @@ type RouteAdder interface {
 
 func NewAPIMux(config APIMuxConfig, routeAdder RouteAdder) http.Handler {
 	app := web.NewApp(config.Shutdown,config.Log ,nil)
+	
 	// constructs the handlers and binds them to the API endpoints
-	// app\services\api\v1\cmd\crud.go
-	// app\services\api\v1\handlers\users\routes.go
 	routeAdder.Add(app, config)
 	return app
 }

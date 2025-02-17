@@ -18,13 +18,15 @@ type add struct{}
 // Add implements the RouterAdder interface.
 func (add) Add(app *web.App, cfg v1.APIMuxConfig) {
 	users.Routes(app, users.Config{
-		Log:  cfg.Log,
-		Auth: cfg.Auth,
-		DB:   cfg.DB,
+		Log:   cfg.Log,
+		Auth:  cfg.Auth,
+		DB:    cfg.DB,
+		IdGen: cfg.IdGen,
 	})
 	posts.Routes(app, posts.Config{
-		Log:  cfg.Log,
-		Auth: cfg.Auth,
-		DB:   cfg.DB,
+		Log:   cfg.Log,
+		Auth:  cfg.Auth,
+		DB:    cfg.DB,
+		IdGen: cfg.IdGen,
 	})
 }

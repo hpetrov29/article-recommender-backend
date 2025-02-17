@@ -12,6 +12,7 @@ import (
 	db "github.com/hpetrov29/resttemplate/business/data/dbsql/mysql"
 	v1 "github.com/hpetrov29/resttemplate/business/web/v1"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
+	"github.com/hpetrov29/resttemplate/internal/idgenerator"
 	"github.com/hpetrov29/resttemplate/internal/keystore"
 	"github.com/hpetrov29/resttemplate/internal/logger"
 	"github.com/hpetrov29/resttemplate/internal/web"
@@ -106,6 +107,16 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 	}
 
 	// -------------------------------------------------------------------------
+	// Initialize Id Genereator
+
+	log.Info(ctx, "Id generator startup", "status", "initializing Id generator service")
+
+	snowflakeGen, err := idgenerator.NewIdGenerator(idgenerator.IdGenConfig{MachineID: func() (uint16, error) {return 1,nil}})
+	if err != nil {
+		return fmt.Errorf("error constructing Id Generator service: %w", err)
+	}
+
+	// -------------------------------------------------------------------------
 	// Start API
 
 	log.Info(ctx, "API startup", "version", build)
@@ -120,6 +131,7 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 		Log: log,
 		Auth: auth,
 		DB: mysqlClient,
+		IdGen: snowflakeGen,
 	}
 
 	apiMux := v1.NewAPIMux(muxConfig, routeAdder)

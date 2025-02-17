@@ -1,12 +1,10 @@
 package usersqldb
 
 import (
-	"database/sql"
 	"fmt"
 	"net/mail"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hpetrov29/resttemplate/business/core/user"
 	"github.com/hpetrov29/resttemplate/business/data/dbsql/mysql/dbarray"
 )
@@ -14,15 +12,12 @@ import (
 // dbUser represents the structure used to transfer user data
 // between the application and the database.
 type dbUser struct {
-	ID           uuid.UUID      `db:"user_id"`
-	Name         string         `db:"name"`
-	Email        string         `db:"email"`
-	Roles        dbarray.String 		`db:"roles"`
-	PasswordHash []byte         `db:"password_hash"`
-	Enabled      bool           `db:"enabled"`
-	Department   sql.NullString `db:"department"`
-	DateCreated  time.Time      `db:"date_created"`
-	DateUpdated  time.Time      `db:"date_updated"`
+	Id           	uint64      		`db:"id"`
+	Username     	string      		`db:"username"`
+	Email        	string         		`db:"email"`
+	Roles        	dbarray.String 		`db:"roles"`
+	PasswordHash 	[]byte         		`db:"password_hash"`
+	CreatedAt  		time.Time      		`db:"created_at"`
 }
 
 // toDBUser converts a user.User instance (found in the service layer) to a dbUser struct suited for database operations.
@@ -36,18 +31,12 @@ func toDBUser(usr user.User) dbUser {
 	}
 
 	return dbUser{
-		ID:           usr.ID,
-		Name:         usr.Name,
+		Id:           usr.Id,
+		Username:     usr.Username,
 		Email:        usr.Email.Address,
 		Roles:        roles,
 		PasswordHash: usr.PasswordHash,
-		Department: sql.NullString{
-			String: usr.Department,
-			Valid:  usr.Department != "",
-		},
-		Enabled:     usr.Enabled,
-		DateCreated: usr.DateCreated.UTC(),
-		DateUpdated: usr.DateUpdated.UTC(),
+		CreatedAt: 	  usr.CreatedAt.UTC(),
 	}
 }
 
@@ -70,15 +59,12 @@ func toCoreUser(dbUsr dbUser) (user.User, error) {
 	}
 
 	usr := user.User{
-		ID:           dbUsr.ID,
-		Name:         dbUsr.Name,
+		Id:           dbUsr.Id,
+		Username:     dbUsr.Username,
 		Email:        addr,
 		Roles:        roles,
 		PasswordHash: dbUsr.PasswordHash,
-		Enabled:      dbUsr.Enabled,
-		Department:   dbUsr.Department.String,
-		DateCreated:  dbUsr.DateCreated.In(time.Local),
-		DateUpdated:  dbUsr.DateUpdated.In(time.Local),
+		CreatedAt:    dbUsr.CreatedAt.In(time.Local),
 	}
 
 	return usr, nil

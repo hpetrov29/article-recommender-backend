@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/mail"
+	"strconv"
 	"strings"
 	"time"
 
@@ -52,7 +53,7 @@ func (h *Handlers) Signup(ctx context.Context, w http.ResponseWriter, r *http.Re
 	kid := web.Param(r, "kid")
 	claims := auth.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   usr.ID.String(),
+			Subject:   strconv.FormatUint(usr.Id, 10),
 			Issuer:    "service",
 			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
@@ -96,7 +97,7 @@ func (h *Handlers) Login(ctx context.Context, w http.ResponseWriter, r *http.Req
 
 	claims := auth.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   usr.ID.String(),
+			Subject:   strconv.FormatUint(usr.Id, 10),
 			Issuer:    "service",
 			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),

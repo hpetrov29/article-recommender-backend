@@ -7,6 +7,7 @@ import (
 	"github.com/hpetrov29/resttemplate/business/core/user/stores/usersqldb"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
 	"github.com/hpetrov29/resttemplate/business/web/v1/middleware"
+	"github.com/hpetrov29/resttemplate/internal/idgenerator"
 	"github.com/hpetrov29/resttemplate/internal/logger"
 	"github.com/hpetrov29/resttemplate/internal/web"
 	"github.com/jmoiron/sqlx"
@@ -14,9 +15,10 @@ import (
 
 // Config contains all the mandatory systems required by handlers.
 type Config struct {
-	Log  *logger.Logger
-	Auth *auth.Auth
-	DB   *sqlx.DB
+	Log   *logger.Logger
+	Auth  *auth.Auth
+	DB    *sqlx.DB
+	IdGen *idgenerator.IdGenerator
 }
 
 // Routes initializes the required user specific repositories, service and handler,
@@ -27,7 +29,7 @@ type Config struct {
 // 	- cfg: configuration including pointers to the logging, database, and authentication systems.
 func Routes(app *web.App, cfg Config) {
 	userRepository := usersqldb.NewStore(cfg.Log, cfg.DB)
-	userService := user.NewCore(userRepository, cfg.Log)
+	userService := user.NewCore(userRepository, cfg.Log, cfg.IdGen)
 	handlers := New(userService, cfg.Auth)
 
 	authenticated := middleware.Authenticate(cfg.Auth)

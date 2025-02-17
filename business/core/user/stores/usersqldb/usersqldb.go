@@ -47,9 +47,9 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 func (s *Store) Create(ctx context.Context, usr user.User) (sql.Result, error) {
 	const q = `
 	INSERT INTO users
-		(user_id, name, email, password_hash, roles, enabled, department, date_created, date_updated)
+		(id, username, email, password_hash, roles, created_at)
 	VALUES
-		(:user_id, :name, :email, :password_hash, :roles, :enabled, :department, :date_created, :date_updated)`
+		(:id, :username, :email, :password_hash, :roles, :created_at);`
 	
 	res, err := db.NamedExecContext(ctx, s.log, s.db, q, toDBUser(usr)); 
 	
@@ -73,16 +73,16 @@ func (s *Store) Create(ctx context.Context, usr user.User) (sql.Result, error) {
 //   - error: an error if the deletion fails. If successful, returns nil.
 func (s *Store) Delete(ctx context.Context, usr user.User) error {
 	data := struct {
-		UserID string `db:"user_id"`
+		UserID uint64 `db:"id"`
 	}{
-		UserID: usr.ID.String(),
+		UserID: usr.Id,
 	}
 
 	const q = `
 	DELETE FROM
 		users
 	WHERE
-		user_id = :user_id`
+		id = :id`
 
 	if _, err := db.NamedExecContext(ctx, s.log, s.db, q, data); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
@@ -109,11 +109,11 @@ func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.User
 
 	const q = `
 	SELECT
-        user_id, name, email, password_hash, roles, enabled, department, date_created, date_updated
+        id, username, email, password_hash, roles, created_at
 	FROM
 		users
 	WHERE
-		email = :email`
+		email = :email;`
 
 	var dbUsr dbUser
 	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &dbUsr); err != nil {

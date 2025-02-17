@@ -3,7 +3,9 @@ package posts
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/hpetrov29/resttemplate/business/core/post"
@@ -33,17 +35,22 @@ func (h *Handlers) CreatePost(ctx context.Context, w http.ResponseWriter, r *htt
 		return web.Respond(ctx, w, http.StatusUnauthorized, errors.New("authentication failed"))
 	}
 
-	appNewPost.UserId = claims.Subject
+	userId, err := strconv.ParseUint(claims.Subject, 10, 64) // Base 10, 64-bit unsigned integer
+	if err != nil {
+		return web.Respond(ctx, w, http.StatusUnauthorized, fmt.Errorf("authentication failed: %w", err))
+	}
 
 	if err := web.Decode(r, &appNewPost); err != nil {
 		return web.Respond(ctx, w, http.StatusBadRequest, err)
 	}
 
 	coreNewPost, err := toCoreNewPost(appNewPost)
+
 	if err != nil {
 		return web.Respond(ctx, w, http.StatusBadRequest, err)
 	}
 
+	coreNewPost.UserId = userId
 	post, err := h.post.Create(ctx, coreNewPost)
 	if err != nil {
 		return web.Respond(ctx, w, http.StatusInternalServerError, err)
@@ -90,5 +97,4 @@ func (h *Handlers) Query(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	return web.Respond(ctx, w, http.StatusOK, posts)
-
 }

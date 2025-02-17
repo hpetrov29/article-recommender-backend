@@ -126,7 +126,7 @@ func (a *Auth) Authenticate(ctx context.Context, authJWT string) (Claims, error)
 	input := map[string]any{
 		"Key":   pem,
 		"Token": parts[1],
-		"ISS":   a.issuer,
+		"ISS":   a.issuer, //BE VERY CAREFUL WITH THE ISSUER NAME IF AUTH FAILS IT'S PROBABLY BECAUSE OF THIS
 	}
 
 	if err := a.opaPolicyEvaluation(ctx, opaAuthentication, RuleAuthenticate, input); err != nil {

@@ -48,9 +48,9 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 func (s *Store) Create(ctx context.Context, post post.Post) (sql.Result, error) {
 	const q = `
 	INSERT INTO posts
-		(id, title, content, user_id, date_created, date_updated)
+		(id, user_id, title, description, content_id, created_at, updated_at)
 	VALUES
-		(:id, :title, :content, :user_id, :date_created, :date_updated);`
+		(:id, :user_id, :title, :description, :content_id, :created_at, :updated_at);`
 	
 	res, err := db.NamedExecContext(ctx, s.log, s.db, q, toDBPost(post)); 
 	
@@ -71,9 +71,9 @@ func (s *Store) Create(ctx context.Context, post post.Post) (sql.Result, error) 
 //   - error: an error if the deletion fails. If successful, returns nil.
 func (s *Store) Delete(ctx context.Context, post post.Post) error {
 	data := struct {
-		PostId string `db:"id"`
+		PostId uint64 `db:"id"`
 	}{
-		PostId: post.Id.String(),
+		PostId: post.Id,
 	}
 
 	const q = `

@@ -7,6 +7,7 @@ import (
 	"github.com/hpetrov29/resttemplate/business/core/post/stores/postsqldb"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
 	"github.com/hpetrov29/resttemplate/business/web/v1/middleware"
+	"github.com/hpetrov29/resttemplate/internal/idgenerator"
 	"github.com/hpetrov29/resttemplate/internal/logger"
 	"github.com/hpetrov29/resttemplate/internal/web"
 	"github.com/jmoiron/sqlx"
@@ -17,6 +18,7 @@ type Config struct {
 	Log  *logger.Logger
 	Auth *auth.Auth
 	DB   *sqlx.DB
+	IdGen *idgenerator.IdGenerator
 }
 
 // Routes initializes the required post specific repositories, services and handlers,
@@ -27,7 +29,7 @@ type Config struct {
 // 	- cfg: configuration including pointers to the logging, database, and authentication systems.
 func Routes(app *web.App, cfg Config) {
 	postRepository := postsqldb.NewStore(cfg.Log, cfg.DB)
-	userService := post.NewCore(postRepository, cfg.Log)
+	userService := post.NewCore(postRepository, cfg.Log, cfg.IdGen)
 	handlers := New(userService, cfg.Auth)
 
 	authenticated := middleware.Authenticate(cfg.Auth)

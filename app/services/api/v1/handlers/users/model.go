@@ -11,15 +11,12 @@ import (
 
 // AppUser represents information about an individual user.
 type AppUser struct {
-	ID           string   `json:"id"`
-	Name         string   `json:"name"`
+	Id           uint64   `json:"id"`
+	Username     string   `json:"username"`
 	Email        string   `json:"email"`
 	Roles        []string `json:"roles"`
 	PasswordHash []byte   `json:"-"`
-	Department   string   `json:"department"`
-	Enabled      bool     `json:"enabled"`
-	DateCreated  string   `json:"dateCreated"`
-	DateUpdated  string   `json:"dateUpdated"`
+	CreatedAt  	 string   `json:"createdAt"`
 	Token 		 string   `json:"token"`
 }
 
@@ -30,16 +27,13 @@ func toAppUser(usr user.User, token string) AppUser {
 	}
 
 	return AppUser{
-		ID:           usr.ID.String(),
-		Name:         usr.Name,
-		Email:        usr.Email.Address,
-		Roles:        roles,
-		PasswordHash: usr.PasswordHash,
-		Department:   usr.Department,
-		Enabled:      usr.Enabled,
-		DateCreated:  usr.DateCreated.Format(time.RFC3339),
-		DateUpdated:  usr.DateUpdated.Format(time.RFC3339),
-		Token: token,
+		Id:           	usr.Id,
+		Username:       usr.Username,
+		Email:        	usr.Email.Address,
+		Roles:        	roles,
+		PasswordHash: 	usr.PasswordHash,
+		CreatedAt:  	usr.CreatedAt.Format(time.RFC3339),
+		Token: 			token,
 	}
 }
 
@@ -56,34 +50,21 @@ func toAppUsers(users []user.User) []AppUser {
 
 // AppNewUser contains information needed to create a new user.
 type AppNewUser struct {
-	Name            string   `json:"name" validate:"required"`
+	Username        string   `json:"username" validate:"required"`
 	Email           string   `json:"email" validate:"required,email"`
-	Roles           []string `json:"roles" validate:"required"`
-	Department      string   `json:"department"`
 	Password        string   `json:"password" validate:"required"`
 	PasswordConfirm string   `json:"passwordConfirm" validate:"eqfield=Password"`
 }
 
 func toCoreNewUser(app AppNewUser) (user.NewUser, error) {
-	roles := make([]user.Role, len(app.Roles))
-	for i, roleStr := range app.Roles {
-		role, err := user.ParseRole(roleStr)
-		if err != nil {
-			return user.NewUser{}, fmt.Errorf("parsing role: %w", err)
-		}
-		roles[i] = role
-	}
-
 	addr, err := mail.ParseAddress(app.Email)
 	if err != nil {
 		return user.NewUser{}, fmt.Errorf("parsing email: %w", err)
 	}
 
 	usr := user.NewUser{
-		Name:            app.Name,
+		Username:        app.Username,
 		Email:           *addr,
-		Roles:           roles,
-		Department:      app.Department,
 		Password:        app.Password,
 		PasswordConfirm: app.PasswordConfirm,
 	}

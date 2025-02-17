@@ -2,27 +2,28 @@ package post
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // Post struct contains information about an individual user.
 // Meant to be used at the service/core layer
 type Post struct {
-	Id 			uuid.UUID
+	Id          uint64
+	UserId      uint64
 	Title       string
-	Content 	string
-	UserId      uuid.UUID
-	DateCreated time.Time
-	DateUpdated time.Time
+	Description string
+	FrontImage  string
+	ContentId   uint64
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 // NewPost contains information required to create a new user.
 // Meant to be used at the service/core layer
 type NewPost struct {
+	UserId      uint64
 	Title       string
-	Content 	string
-	UserId      uuid.UUID
+	Description string
+	ContentId 	uint64
 }
 
 // UpdatePost contains information required to update a user.

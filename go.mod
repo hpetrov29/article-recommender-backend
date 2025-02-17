@@ -15,6 +15,7 @@ require (
 	github.com/open-policy-agent/opa v0.63.0
 	github.com/rs/cors v1.11.0
 	github.com/sethvargo/go-envconfig v1.1.0
+	github.com/sony/sonyflake v1.2.0
 	golang.org/x/crypto v0.21.0
 )
 

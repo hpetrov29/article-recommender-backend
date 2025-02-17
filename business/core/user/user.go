@@ -10,7 +10,6 @@ import (
 	"net/mail"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hpetrov29/resttemplate/internal/logger"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -34,10 +33,15 @@ type Storer interface {
 	QueryByEmail(ctx context.Context, email mail.Address) (User, error)
 }
 
+type IdGenerator interface {
+	GenerateId() (uint64, error)
+}
+
 // Core manages the set of APIs for user api access
 type Core struct {
 	storer Storer
 	log *logger.Logger
+	idGenerator IdGenerator
 }
 
 // NewCore constructs and returns a new Core instance for user API access.
@@ -45,10 +49,11 @@ type Core struct {
 // Parameters:
 //   - st: struct that implements the Storer interface for repository operations.
 //   - log: pointer to the logger used for logging within the core.
-func NewCore(st Storer, log *logger.Logger) *Core {
+func NewCore(st Storer, log *logger.Logger, idGen IdGenerator) *Core {
 	return &Core{
 		storer: st, 
 		log: log,
+		idGenerator: idGen,
 	}
 }
 
@@ -64,17 +69,18 @@ func (c *Core) Create(ctx context.Context, newUser NewUser) (User, error) {
 	}
 
 	now := time.Now()
+	id, err := c.idGenerator.GenerateId()
+	if err != nil {
+		return User{}, err
+	}
 
 	usr := User{
-		ID:           uuid.New(),
-		Name:         newUser.Name,
-		Email:        newUser.Email,
-		PasswordHash: hash,
-		Roles:        newUser.Roles,
-		Department:   newUser.Department,
-		Enabled:      true,
-		DateCreated:  now,
-		DateUpdated:  now,
+		Id:          	id,
+		Username:     	newUser.Username,
+		Email:        	newUser.Email,
+		PasswordHash: 	hash,
+		Roles:        	newUser.Roles,
+		CreatedAt:  	now,
 	}
 
 	if _, err := c.storer.Create(ctx, usr); err != nil {
