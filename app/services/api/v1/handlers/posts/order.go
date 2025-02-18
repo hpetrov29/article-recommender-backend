@@ -10,17 +10,17 @@ import (
 )
 
 const (
-	orderByDateCreated = "date_created"
-	orderByDateUpdated = "date_updated"
+	orderByCreatedAt = "created_at"
+	orderByUpdatedAt = "updated_at"
 )
 
 var orderByFields = map[string]string{
-	orderByDateCreated:   post.OrderByDateCreated,
-	orderByDateUpdated:   post.OrderByDateUpdated,
+	orderByCreatedAt:   post.OrderByCreatedAt,
+	orderByUpdatedAt:   post.OrderByUpdatedAt,
 }
 
 func parseOrder(r *http.Request) (order.OrderBy, error) {
-	orderBy, err := order.Parse(r, order.NewBy(orderByDateCreated, order.ASC))
+	orderBy, err := order.Parse(r, order.NewBy(orderByCreatedAt, order.ASC))
 	if err != nil {
 		return order.OrderBy{}, err
 	}

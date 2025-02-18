@@ -9,8 +9,8 @@ import (
 )
 
 var orderByFields = map[string]string{
-	post.OrderByDateCreated:  "created_at",
-	post.OrderByDateUpdated:  "updated_at",
+	post.OrderByCreatedAt:  "created_at",
+	post.OrderByUpdatedAt:  "updated_at",
 }
 
 func (s *Store) orderByClause(orderBy order.OrderBy, buf *bytes.Buffer) (error) {

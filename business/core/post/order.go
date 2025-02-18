@@ -5,6 +5,6 @@ package post
 // Set of fields that the results can be ordered by. These are the names
 // that should be used by the application layer.
 const (
-	OrderByDateCreated = "date_created"
-	OrderByDateUpdated = "date_updated"
+	OrderByCreatedAt = "created_at"
+	OrderByUpdatedAt = "updated_at"
 )

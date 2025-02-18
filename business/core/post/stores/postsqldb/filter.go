@@ -2,7 +2,6 @@ package postsqldb
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 
 	"github.com/hpetrov29/resttemplate/business/core/post"
@@ -10,26 +9,24 @@ import (
 
 func (s *Store) applyFilter(filter post.QueryFilter, data map[string]interface{}, buf *bytes.Buffer) {
 	var wc []string
-
-	if filter.Id != nil {
-		data["id"] = *filter.Id
-		wc = append(wc, "id = :id")
-	}
-
 	if filter.UserId != nil {
-		data["user_id"] = filter.UserId.String()
-		fmt.Println(data["user_id"])
+		data["user_id"] = filter.UserId
 		wc = append(wc, "user_id = :user_id")
 	}
 
-	if filter.DateCreated != nil {
-		data["date_created"] = *filter.DateCreated
-		wc = append(wc, "date_created = :date_created")
+	var timeConditions []string
+	if filter.CreatedAt != nil {
+		data["created_at"] = *filter.CreatedAt
+		timeConditions = append(timeConditions, "created_at > :created_at")
 	}
 
-	if filter.DateUpdated != nil {
-		data["date_updated"] = *filter.DateUpdated
-		wc = append(wc, "date_updated = :date_updated")
+	if filter.UpdatedAt != nil {
+		data["updated_at"] = *filter.UpdatedAt
+		timeConditions = append(timeConditions, "updated_at > :updated_at")
+	}
+
+	if len(timeConditions) > 0 {
+		wc = append(wc, "("+strings.Join(timeConditions, " OR ")+")")
 	}
 
 	if len(wc) > 0 {

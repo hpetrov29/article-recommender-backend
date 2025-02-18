@@ -132,7 +132,7 @@ func (s *Store) Query(ctx context.Context, filter post.QueryFilter, orderBy orde
 
 	s.applyFilter(filter, data, buf)
 	s.orderByClause(orderBy, buf)
-	buf.WriteString(" LIMIT :rows_per_page OFFSET :offset")
+	buf.WriteString(" LIMIT :rows_per_page OFFSET :offset;")
 
 	var dbPosts []dbPost
 	if err := db.NamedQuerySlice(ctx, s.log, s.db, buf.String(), data, &dbPosts); err != nil {
