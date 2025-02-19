@@ -19,7 +19,7 @@ var (
 type Storer interface {
 	Create(ctx context.Context, post Post) (sql.Result, error)
 	Delete(ctx context.Context, post Post) error
-	QueryById(ctx context.Context, id string) (Post, error)
+	QueryById(ctx context.Context, id uint64) (Post, error)
 	Query(ctx context.Context, filter QueryFilter, orderBy order.OrderBy, pageNumber int, rowsPerPage int) ([]Post, error)
 }
 
@@ -95,7 +95,7 @@ func (c *Core) Delete(ctx context.Context, post Post) error {
 	return nil
 }
 
-func (c *Core) GetPostById(ctx context.Context, id string) (Post, error) {
+func (c *Core) QueryById(ctx context.Context, id uint64) (Post, error) {
 	post, err := c.storer.QueryById(ctx, id)
 	if err != nil {
 		return Post{}, err

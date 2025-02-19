@@ -7,19 +7,20 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hpetrov29/resttemplate/business/data/dbnosql"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Config struct {
-	User         string
-	Password     string
-	Host         string
-	Name         string
-	MaxOpenConns int
+// -------------------------------------------------------------------------
+// MongoClient implements the NOSQLDB interface
+
+type MongoClient struct {
+	c *mongo.Database
 }
 
-func Open(cfg Config) (*mongo.Client, error) {
+func (mc *MongoClient) Open(cfg dbnosql.Config) (error) {
 	uri := fmt.Sprintf("mongodb://%s:%s@%s", cfg.User, cfg.Password, cfg.Host)
 
 	clientOptions := options.Client().ApplyURI(uri)
@@ -27,35 +28,77 @@ func Open(cfg Config) (*mongo.Client, error) {
 
 	client, err := mongo.Connect(context.TODO(), clientOptions)
     if err != nil {
-        return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
+        return fmt.Errorf("failed to connect to MongoDB: %w", err)
     }
-
-	return client, nil
+	mc.c = client.Database(cfg.Name)
+	return nil
 }
 
 // StatusCheck returns nil if it can successfully talk to the MongoDB database.
 // It returns a non-nil error otherwise.
-func StatusCheck(ctx context.Context, c *mongo.Client) error {
+func (mc *MongoClient) StatusCheck(ctx context.Context) error {
 	// Ping the MongoDB server to check connectivity.
-	err := c.Ping(ctx, nil)
+	err := mc.c.Client().Ping(ctx, nil)
 	if err != nil {
 		if strings.Contains(err.Error(), "connection refused") {
 			time.Sleep(5 * time.Second)
-			return StatusCheck(ctx, c)
+			return mc.StatusCheck(ctx)
 		}
 		return err
 	}
 	return nil
 }
 
-func Close(client *mongo.Client) error {
-    if client != nil {
+func (mc *MongoClient) Close() error {
+    if mc.c != nil {
         ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
         defer cancel()
-        if err := client.Disconnect(ctx); err != nil {
+        if err := mc.c.Client().Disconnect(ctx); err != nil {
             return fmt.Errorf("error closing MongoDB connection: %w", err)
 		}
 		return nil
     }
-	return errors.New("mongoDB client was a null pointer")
+	return errors.New("mongoDB client is not initialized")
+}
+
+// -------------------------------------------------------------------------
+// mongoRepository implements the interface required by the core api logic
+
+type MongoRepository struct {
+    collection *mongo.Collection
+}
+
+func (mc *MongoClient) GetRepository(collectionName string) dbnosql.NOSQLDBrepo {
+	collection := mc.c.Collection(collectionName)
+    return &MongoRepository{collection}
+}
+
+// Insert inserts a new record into the MongoDB collection.
+func (r *MongoRepository) Insert(ctx context.Context, record string) error {
+    doc := bson.M{"record": record}
+    
+    _, err := r.collection.InsertOne(ctx, doc)
+    return err
+}
+
+// Query retrieves a record from the MongoDB collection.
+func (r *MongoRepository) Query(ctx context.Context, record string) (string, error) {
+    var result bson.M
+
+    err := r.collection.FindOne(ctx, bson.M{"record": record}).Decode(&result)
+    if err != nil {
+        return "", err
+    }
+
+	if value, ok := result["record"].(string); ok {
+        return value, nil
+    }
+	
+	return "", errors.New("record field is not a string")
+}
+
+// Delete deletes a record from the MongoDB collection.
+func (r *MongoRepository) Delete(ctx context.Context, record string) error {
+    _, err := r.collection.DeleteOne(ctx, bson.M{"record": record})
+    return err
 }

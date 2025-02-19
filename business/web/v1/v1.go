@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/hpetrov29/resttemplate/business/data/dbnosql"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
 	"github.com/hpetrov29/resttemplate/internal/idgenerator"
 	"github.com/hpetrov29/resttemplate/internal/logger"
@@ -13,12 +14,13 @@ import (
 
 // APIMuxConfig contains all mandatory systems required by handlers.
 type APIMuxConfig struct {
-	Build    string
-	Shutdown chan os.Signal
-	Log      *logger.Logger
-	Auth	 *auth.Auth
-	DB       *sqlx.DB
-	IdGen 	 *idgenerator.IdGenerator
+	Build    	string
+	Shutdown 	chan os.Signal
+	Log      	*logger.Logger
+	Auth	 	*auth.Auth
+	SQLDB       *sqlx.DB
+	NOSQLDB 	dbnosql.NOSQLDB
+	IdGen 	 	*idgenerator.IdGenerator
 }
 
 // RouteAdder defines behavior that sets the routes to bind for an instance

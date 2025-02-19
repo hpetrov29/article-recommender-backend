@@ -20,13 +20,14 @@ func (add) Add(app *web.App, cfg v1.APIMuxConfig) {
 	users.Routes(app, users.Config{
 		Log:   cfg.Log,
 		Auth:  cfg.Auth,
-		DB:    cfg.DB,
+		DB:    cfg.SQLDB,
 		IdGen: cfg.IdGen,
 	})
 	posts.Routes(app, posts.Config{
-		Log:   cfg.Log,
-		Auth:  cfg.Auth,
-		DB:    cfg.DB,
-		IdGen: cfg.IdGen,
+		Log:   		cfg.Log,
+		Auth:  		cfg.Auth,
+		SQLDB:    	cfg.SQLDB,
+		NOSQLDB: 	cfg.NOSQLDB,
+		IdGen: 		cfg.IdGen,
 	})
 }

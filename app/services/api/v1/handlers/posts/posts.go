@@ -59,13 +59,11 @@ func (h *Handlers) CreatePost(ctx context.Context, w http.ResponseWriter, r *htt
 	return web.Respond(ctx, w, http.StatusOK, post)
 }
 
-func (h *Handlers) GetPost(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	postId := web.Param(r, "id")
-	if strings.Trim(postId, " ") == "" {
-		return web.Respond(ctx, w, http.StatusBadRequest, errors.New("must provide a post id"))
+func (h *Handlers) QueryById(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	id, err := strconv.ParseUint(web.Param(r, "id"), 10, 64); if err != nil {
+		return web.Respond(ctx, w, http.StatusBadRequest, err)
 	}
-	
-	post, err := h.post.GetPostById(ctx, postId)
+	post, err := h.post.QueryById(ctx, id)
 	if err != nil {
 		if strings.Contains(err.Error(), "post not found") {	
 			return web.Respond(ctx, w, http.StatusNotFound, err)

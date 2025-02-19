@@ -89,20 +89,14 @@ func (s *Store) Delete(ctx context.Context, post post.Post) error {
 	return nil
 }
 
-func (s *Store) QueryById(ctx context.Context, id string) (post.Post, error) {
+func (s *Store) QueryById(ctx context.Context, id uint64) (post.Post, error) {
 	data := struct {
-		id string `db:"id"`
+		Id uint64 `db:"id"`
 	}{
-		id: id,
+		Id: id,
 	}
 
-	const q = `
-	SELECT
-        *
-	FROM
-		posts
-	WHERE
-		id = :id;`
+	const q = `SELECT * FROM posts WHERE id = :id`
 
 	var dbPost dbPost
 	if err := mysql.NamedQueryStruct(ctx, s.log, s.db, q, data, &dbPost); err != nil {

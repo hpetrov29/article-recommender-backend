@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"syscall"
 
+	"github.com/hpetrov29/resttemplate/business/data/dbnosql"
 	"github.com/hpetrov29/resttemplate/business/data/dbnosql/mongo"
 	mysql "github.com/hpetrov29/resttemplate/business/data/dbsql/mysql"
 	v1 "github.com/hpetrov29/resttemplate/business/web/v1"
@@ -92,7 +93,8 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 
 	log.Info(ctx, "NOSQLDB startup", "status", "initializing nosql database support", "host", config.NOSQLDB.Host)
 
-	mongoClient, err := mongo.Open(mongo.Config{
+	mongoClient := &mongo.MongoClient{}
+	err = mongoClient.Open(dbnosql.Config{
 		User:         config.NOSQLDB.User,
 		Password:     config.NOSQLDB.Password,
 		Host:         config.NOSQLDB.Host,
@@ -104,9 +106,9 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 	}
 	defer func() {
 		log.Info(ctx, "NOSQLDB shutdown", "status", "stopping nosql database support", "host", config.NOSQLDB.Host)
-		mongo.Close(mongoClient)
+		mongoClient.Close()
 	}()
-	err = mongo.StatusCheck(ctx, mongoClient); if err != nil {
+	err = mongoClient.StatusCheck(ctx); if err != nil {
 		return fmt.Errorf("error nosql database status check: %w", err)
 	}
 
@@ -154,7 +156,8 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 		Shutdown: shutdown,
 		Log: log,
 		Auth: auth,
-		DB: mysqlClient,
+		SQLDB: mysqlClient,
+		NOSQLDB: mongoClient,
 		IdGen: snowflakeGen,
 	}
 
