@@ -1,5 +1,5 @@
 // Package db provides support for access to a mysql database using the mysql driver
-package db
+package mysql
 
 import (
 	"context"
@@ -52,7 +52,6 @@ func Open(config Config) (*sqlx.DB, error) {
 	}
 
 	decoded, _ := url.QueryUnescape(u.String()[2:])
-	fmt.Println(decoded)
 	db, err := sqlx.Open("mysql", decoded)
 	if err != nil {
 		return nil, err

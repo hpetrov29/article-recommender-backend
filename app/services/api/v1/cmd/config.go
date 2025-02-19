@@ -15,14 +15,21 @@ type GlobalConfig struct {
 		ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT, default=20s"`
 		//DebugHost       string          `conf:"default:0.0.0.0:4000"`
 	}
-	DB struct {
-		User         string `env:"DB_USER, required"`
-		Password     string `env:"DB_PASSWORD, required"`
-		Host         string `env:"DB_HOST, required"`
-		Name         string `env:"DB_NAME, required"`
-		MaxIdleConns int    `env:"DB_MAX_IDLE_CONNECTIONS, default=2"`
-		MaxOpenConns int    `env:"DB_MAX_OPEN_CONNECTIONS, default=0"`
-		DisableTLS   bool   `env:"DB_DISABLE_TLS, default=true"`
+	SQLDB struct {
+		User         string `env:"SQLDB_USER, required"`
+		Password     string `env:"SQLDB_PASSWORD, required"`
+		Host         string `env:"SQLDB_HOST, required"`
+		Name         string `env:"SQLDB_NAME, required"`
+		MaxIdleConns int    `env:"SQLDB_MAX_IDLE_CONNECTIONS, default=2"`
+		MaxOpenConns int    `env:"SQLDB_MAX_OPEN_CONNECTIONS, default=0"`
+		DisableTLS   bool   `env:"SQLDB_DISABLE_TLS, default=true"`
+	}
+	NOSQLDB struct {
+		User         string `env:"NOSQLDB_USER, required"`
+		Password     string `env:"NOSQLDB_PASSWORD, required"`
+		Host         string `env:"NOSQLDB_HOST, required"`
+		Name         string `env:"NOSQLDB_NAME, required"`
+		MaxOpenConns int    `env:"NOSQLDB_MAX_OPEN_CONNECTIONS, default=0"`
 	}
 	Auth struct {
 		KeysFolder string `env:"KEY_PATH, default=./zarf/keys/"`

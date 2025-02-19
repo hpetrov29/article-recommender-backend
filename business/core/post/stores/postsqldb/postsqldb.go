@@ -9,7 +9,7 @@ import (
 
 	"github.com/hpetrov29/resttemplate/business/core/post"
 
-	db "github.com/hpetrov29/resttemplate/business/data/dbsql/mysql"
+	mysql "github.com/hpetrov29/resttemplate/business/data/dbsql/mysql"
 	"github.com/hpetrov29/resttemplate/business/data/order"
 	"github.com/hpetrov29/resttemplate/internal/logger"
 	"github.com/jmoiron/sqlx"
@@ -52,7 +52,7 @@ func (s *Store) Create(ctx context.Context, post post.Post) (sql.Result, error) 
 	VALUES
 		(:id, :user_id, :title, :description, :content_id, :created_at, :updated_at);`
 	
-	res, err := db.NamedExecContext(ctx, s.log, s.db, q, toDBPost(post)); 
+	res, err := mysql.NamedExecContext(ctx, s.log, s.db, q, toDBPost(post)); 
 	
 	if err != nil {
 		return nil, fmt.Errorf("namedexeccontext: %w", err)
@@ -82,7 +82,7 @@ func (s *Store) Delete(ctx context.Context, post post.Post) error {
 	WHERE
 		id = :id`
 
-	if _, err := db.NamedExecContext(ctx, s.log, s.db, q, data); err != nil {
+	if _, err := mysql.NamedExecContext(ctx, s.log, s.db, q, data); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
 
@@ -105,8 +105,8 @@ func (s *Store) QueryById(ctx context.Context, id string) (post.Post, error) {
 		id = :id;`
 
 	var dbPost dbPost
-	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &dbPost); err != nil {
-		if errors.Is(err, db.ErrDBNotFound) {
+	if err := mysql.NamedQueryStruct(ctx, s.log, s.db, q, data, &dbPost); err != nil {
+		if errors.Is(err, mysql.ErrDBNotFound) {
 			return post.Post{}, fmt.Errorf("namedquerystruct: %w", post.ErrNotFound)
 		}
 		return post.Post{}, fmt.Errorf("namedquerystruct: %w", err)
@@ -135,7 +135,7 @@ func (s *Store) Query(ctx context.Context, filter post.QueryFilter, orderBy orde
 	buf.WriteString(" LIMIT :rows_per_page OFFSET :offset;")
 
 	var dbPosts []dbPost
-	if err := db.NamedQuerySlice(ctx, s.log, s.db, buf.String(), data, &dbPosts); err != nil {
+	if err := mysql.NamedQuerySlice(ctx, s.log, s.db, buf.String(), data, &dbPosts); err != nil {
 		return nil, fmt.Errorf("namedqueryslice: %w", err)
 	}
 

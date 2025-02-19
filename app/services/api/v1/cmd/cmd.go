@@ -9,7 +9,8 @@ import (
 	"runtime"
 	"syscall"
 
-	db "github.com/hpetrov29/resttemplate/business/data/dbsql/mysql"
+	"github.com/hpetrov29/resttemplate/business/data/dbnosql/mongo"
+	mysql "github.com/hpetrov29/resttemplate/business/data/dbsql/mysql"
 	v1 "github.com/hpetrov29/resttemplate/business/web/v1"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
 	"github.com/hpetrov29/resttemplate/internal/idgenerator"
@@ -62,28 +63,51 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 	}
 	
 	// -------------------------------------------------------------------------
-	// Set up database client conneciton
+	// Set up SQL database client conneciton
 
-	log.Info(ctx, "DB startup", "status", "initializing database support", "host", config.DB.Host)
+	log.Info(ctx, "SQLDB startup", "status", "initializing sql database support", "host", config.SQLDB.Host)
 
-	mysqlClient, err := db.Open(db.Config{
-		User:         config.DB.User,
-		Password:     config.DB.Password,
-		Host:         config.DB.Host,
-		Name:         config.DB.Name,
-		MaxIdleConns: config.DB.MaxIdleConns,
-		MaxOpenConns: config.DB.MaxOpenConns,
-		DisableTLS:   config.DB.DisableTLS,
+	mysqlClient, err := mysql.Open(mysql.Config{
+		User:         config.SQLDB.User,
+		Password:     config.SQLDB.Password,
+		Host:         config.SQLDB.Host,
+		Name:         config.SQLDB.Name,
+		MaxIdleConns: config.SQLDB.MaxIdleConns,
+		MaxOpenConns: config.SQLDB.MaxOpenConns,
+		DisableTLS:   config.SQLDB.DisableTLS,
 	})
 	if err != nil {
-		return fmt.Errorf( "error connecting to db: %w", err)
+		return fmt.Errorf( "error connecting to sqldb: %w", err)
 	}
 	defer func() {
-		log.Info(ctx, "DB shutdown", "status", "stopping database support", "host", config.DB.Host)
+		log.Info(ctx, "SQLDB shutdown", "status", "stopping sql database support", "host", config.SQLDB.Host)
 		mysqlClient.Close()
 	}()
-	err = db.StatusCheck(ctx, mysqlClient); if err != nil {
-		return fmt.Errorf("error database status check: %w", err)
+	err = mysql.StatusCheck(ctx, mysqlClient); if err != nil {
+		return fmt.Errorf("error sql database status check: %w", err)
+	}
+
+	// -------------------------------------------------------------------------
+	// Set up NOSQL database client conneciton
+
+	log.Info(ctx, "NOSQLDB startup", "status", "initializing nosql database support", "host", config.NOSQLDB.Host)
+
+	mongoClient, err := mongo.Open(mongo.Config{
+		User:         config.NOSQLDB.User,
+		Password:     config.NOSQLDB.Password,
+		Host:         config.NOSQLDB.Host,
+		Name:         config.NOSQLDB.Name,
+		MaxOpenConns: config.NOSQLDB.MaxOpenConns,
+	})
+	if err != nil {
+		return fmt.Errorf( "error connecting to nosqldb: %w", err)
+	}
+	defer func() {
+		log.Info(ctx, "NOSQLDB shutdown", "status", "stopping nosql database support", "host", config.NOSQLDB.Host)
+		mongo.Close(mongoClient)
+	}()
+	err = mongo.StatusCheck(ctx, mongoClient); if err != nil {
+		return fmt.Errorf("error nosql database status check: %w", err)
 	}
 
 	// -------------------------------------------------------------------------

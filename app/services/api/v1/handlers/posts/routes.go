@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/hpetrov29/resttemplate/business/core/post"
+	"github.com/hpetrov29/resttemplate/business/core/post/stores/postnosqldb"
 	"github.com/hpetrov29/resttemplate/business/core/post/stores/postsqldb"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
 	"github.com/hpetrov29/resttemplate/business/web/v1/middleware"
@@ -21,6 +22,14 @@ type Config struct {
 	IdGen *idgenerator.IdGenerator
 }
 
+//TODO: Implement the actual API
+type SomeNOSQLAPI struct {
+}
+func (api *SomeNOSQLAPI) Insert() error {
+	return nil
+}
+var someAPI *SomeNOSQLAPI
+
 // Routes initializes the required post specific repositories, services and handlers,
 // and sets up the API routes for the application with their respective handlers and middlewares.
 //
@@ -28,8 +37,11 @@ type Config struct {
 // 	- app: the web.App instance used to register the routes.
 // 	- cfg: configuration including pointers to the logging, database, and authentication systems.
 func Routes(app *web.App, cfg Config) {
-	postRepository := postsqldb.NewStore(cfg.Log, cfg.DB)
-	userService := post.NewCore(postRepository, cfg.Log, cfg.IdGen)
+	sqlStore := postsqldb.NewStore(cfg.Log, cfg.DB)
+	hybridStore := postnosqldb.NewStore(cfg.Log, sqlStore, someAPI)
+
+	userService := post.NewCore(hybridStore, cfg.Log, cfg.IdGen)
+
 	handlers := New(userService, cfg.Auth)
 
 	authenticated := middleware.Authenticate(cfg.Auth)
