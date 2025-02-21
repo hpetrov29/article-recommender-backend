@@ -56,13 +56,14 @@ func (h *Handlers) CreatePost(ctx context.Context, w http.ResponseWriter, r *htt
 		return web.Respond(ctx, w, http.StatusInternalServerError, err)
 	}
 
-	return web.Respond(ctx, w, http.StatusOK, post)
+	return web.Respond(ctx, w, http.StatusOK, toAppPost(post))
 }
 
 func (h *Handlers) QueryById(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	id, err := strconv.ParseUint(web.Param(r, "id"), 10, 64); if err != nil {
 		return web.Respond(ctx, w, http.StatusBadRequest, err)
 	}
+
 	post, err := h.post.QueryById(ctx, id)
 	if err != nil {
 		if strings.Contains(err.Error(), "post not found") {	
@@ -70,7 +71,8 @@ func (h *Handlers) QueryById(ctx context.Context, w http.ResponseWriter, r *http
 		}
 		return web.Respond(ctx, w, http.StatusInternalServerError, err)
 	}
-	return web.Respond(ctx, w, http.StatusOK, post)
+	
+	return web.Respond(ctx, w, http.StatusOK, toAppPost(post))
 }
 
 func (h *Handlers) Query(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -94,5 +96,5 @@ func (h *Handlers) Query(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return web.Respond(ctx, w, http.StatusInternalServerError, err)
 	}
 
-	return web.Respond(ctx, w, http.StatusOK, posts)
+	return web.Respond(ctx, w, http.StatusOK, toAppPosts(posts))
 }

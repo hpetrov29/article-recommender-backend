@@ -72,6 +72,7 @@ func (c *Core) Create(ctx context.Context, newPost NewPost) (Post, error) {
 		Title: newPost.Title,
 		Description: newPost.Description,
 		ContentId: contentId,
+		Content: newPost.Content,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}

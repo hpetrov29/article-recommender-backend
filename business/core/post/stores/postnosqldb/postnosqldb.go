@@ -3,7 +3,6 @@ package postnosqldb
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/hpetrov29/resttemplate/business/core/post"
 	"github.com/hpetrov29/resttemplate/business/data/dbnosql"
@@ -27,25 +26,38 @@ func NewStore (log *logger.Logger, sqlStore post.Storer, nosqlStore dbnosql.NOSQ
 }
 
 func (s *Store) Create(ctx context.Context, post post.Post) (sql.Result, error) {
-	err := s.NOSQLstore.Insert(ctx, "test"); if err != nil {
+	res, err := s.SQLstore.Create(ctx, post); if err != nil {
 		return nil, err
 	}
-	return s.SQLstore.Create(ctx, post)
+
+	err = s.NOSQLstore.Insert(ctx, toDbContent(post)); if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (s *Store) Delete(ctx context.Context, post post.Post) error {
-	if err := s.NOSQLstore.Delete(ctx, "test"); err != nil {
+	if err := s.NOSQLstore.Delete(ctx, 0); err != nil {
 		return err
 	}
+	
 	return s.SQLstore.Delete(ctx, post)
 }
 
 func (s *Store) QueryById(ctx context.Context, id uint64) (post.Post, error) {
-	res, err := s.NOSQLstore.Query(ctx, "test"); if err != nil {
+	res, err := s.SQLstore.QueryById(ctx, id); if err != nil {
+		return post.Post{}, nil
+	}
+	
+	var content Content
+	err = s.NOSQLstore.QueryById(ctx, res.ContentId, &content); if err != nil {
 		return post.Post{}, err
 	}
-	fmt.Println(res)
-	return s.SQLstore.QueryById(ctx, id)
+	
+	res.Content = toCoreContent(content)
+
+	return res, nil
 }
 
 func (s *Store) Query(ctx context.Context, filter post.QueryFilter, orderBy order.OrderBy, pageNumber int, rowsPerPage int) ([]post.Post, error) {

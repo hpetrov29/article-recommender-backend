@@ -18,7 +18,7 @@ type NOSQLDB interface {
 }
 
 type NOSQLDBrepo interface {
-	Insert(ctx context.Context, record string) error
-	Query(ctx context.Context, record string) (string, error)
-	Delete(ctx context.Context, record string) error
+	Insert(ctx context.Context, record interface{}) error
+	QueryById(ctx context.Context, id uint64, data any) error
+	Delete(ctx context.Context, id uint64) error
 }

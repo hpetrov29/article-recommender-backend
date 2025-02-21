@@ -74,31 +74,38 @@ func (mc *MongoClient) GetRepository(collectionName string) dbnosql.NOSQLDBrepo 
 }
 
 // Insert inserts a new record into the MongoDB collection.
-func (r *MongoRepository) Insert(ctx context.Context, record string) error {
-    doc := bson.M{"record": record}
-    
-    _, err := r.collection.InsertOne(ctx, doc)
-    return err
+func (r *MongoRepository) Insert(ctx context.Context, record interface{}) error {
+    _, err := r.collection.InsertOne(ctx, record)
+	if err != nil {
+        return fmt.Errorf("failed to insert record in mongoDB: %w", err)
+	}
+    return nil
 }
 
-// Query retrieves a record from the MongoDB collection.
-func (r *MongoRepository) Query(ctx context.Context, record string) (string, error) {
-    var result bson.M
-
-    err := r.collection.FindOne(ctx, bson.M{"record": record}).Decode(&result)
-    if err != nil {
-        return "", err
+// QueryById retrieves a record with the specified id from the MongoDB collection.
+func (r *MongoRepository) QueryById(ctx context.Context, id uint64, data any) error {
+	if data == nil {
+        return errors.New("(*MongoRepository) QueryById expects data to be a non-nil pointer")
     }
 
-	if value, ok := result["record"].(string); ok {
-        return value, nil
+	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(data)
+    if errors.Is(err, mongo.ErrNoDocuments) {
+        return fmt.Errorf("document not found in mongoDB: %w", err)
     }
-	
-	return "", errors.New("record field is not a string")
+
+	return err
 }
 
 // Delete deletes a record from the MongoDB collection.
-func (r *MongoRepository) Delete(ctx context.Context, record string) error {
-    _, err := r.collection.DeleteOne(ctx, bson.M{"record": record})
-    return err
+func (r *MongoRepository) Delete(ctx context.Context, id uint64) error {
+    res, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return err 
+	}
+
+	if res.DeletedCount == 0 {
+		return fmt.Errorf("document with id %d not found in mongoDB", id)
+	}
+
+    return nil
 }
