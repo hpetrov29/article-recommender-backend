@@ -115,10 +115,19 @@ func (h *Handlers) Login(ctx context.Context, w http.ResponseWriter, r *http.Req
         Value:   token,
         Expires: time.Now().Add(24 * time.Hour),
         Path:    "/",
-		Secure: true,
+		Secure: false,
 		HttpOnly: true,
 		SameSite: http.SameSiteNoneMode,
     })
 	
 	return web.Respond(ctx, w, http.StatusOK, toToken(token))
+}
+
+func (h *Handlers) Me(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	claims, err := h.auth.Authenticate(ctx, r.Header.Get("authorization"))
+	if err != nil {
+		return web.Respond(ctx, w, http.StatusUnauthorized, err)
+	}
+
+	return web.Respond(ctx, w, http.StatusOK, claims);
 }

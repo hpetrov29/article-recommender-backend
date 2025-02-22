@@ -39,6 +39,7 @@ func Routes(app *web.App, cfg Config) {
 	// NATIVE AUTH
 	app.Handle(http.MethodPost, "/users/token/{kid}", handlers.Signup)
 	app.Handle(http.MethodGet, "/users/token/{kid}", handlers.Login)
+	app.Handle(http.MethodGet, "/users/me", handlers.Me)
 	// PROTECTED ROUTES
 	app.Handle(http.MethodGet, "/users", handlers.ProtectedRoute, authenticated)
 }
