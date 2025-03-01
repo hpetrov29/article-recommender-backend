@@ -23,8 +23,22 @@ services:
       start_period: 30s
       timeout: 10s
 
+  nats:
+    image: nats:2.10
+    container_name: nats-server
+    ports:
+      - "4222:4222"
+      - "6222:6222"
+      - "8222:8222"
+    environment:
+      - NATS_JETSTREAM=true
+    volumes:
+      - ./nats-server.conf:/etc/nats/nats-server.conf
+      - nats_data:/data
+    command: --config /etc/nats/nats-server.conf
+
   mongo:
-    image: mongo:latest
+    image: mongo:8.0
     container_name: mongo-container
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
@@ -62,6 +76,8 @@ services:
       NOSQLDB_NAME: "${NOSQLDB_NAME}"
       PORT: "${PORT}"
       ALLOWED_ORIGINS: "${ALLOWED_ORIGINS}"
+      NATS_USER: "${NATS_USER}"
+      NATS_PASSWORD: "${NATS_PASSWORD}"
     ports:
       - "8000:8000"
     depends_on:
@@ -80,3 +96,4 @@ networks:
 volumes:
   mysql_data:
   mongo_data:
+  nats_data:
