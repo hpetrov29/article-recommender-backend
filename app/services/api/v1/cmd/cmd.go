@@ -12,6 +12,8 @@ import (
 	"github.com/hpetrov29/resttemplate/business/data/dbnosql"
 	"github.com/hpetrov29/resttemplate/business/data/dbnosql/mongo"
 	mysql "github.com/hpetrov29/resttemplate/business/data/dbsql/mysql"
+	"github.com/hpetrov29/resttemplate/business/data/messaging"
+	"github.com/hpetrov29/resttemplate/business/data/messaging/nats"
 	v1 "github.com/hpetrov29/resttemplate/business/web/v1"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
 	"github.com/hpetrov29/resttemplate/internal/idgenerator"
@@ -64,7 +66,7 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 	}
 	
 	// -------------------------------------------------------------------------
-	// Set up SQL database client conneciton
+	// Set up SQL database client connection
 
 	log.Info(ctx, "SQLDB startup", "status", "initializing sql database support", "host", config.SQLDB.Host)
 
@@ -89,7 +91,7 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 	}
 
 	// -------------------------------------------------------------------------
-	// Set up NOSQL database client conneciton
+	// Set up NOSQL database client connection
 
 	log.Info(ctx, "NOSQLDB startup", "status", "initializing nosql database support", "host", config.NOSQLDB.Host)
 
@@ -110,6 +112,28 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 	}()
 	err = mongoClient.StatusCheck(ctx); if err != nil {
 		return fmt.Errorf("error nosql database status check: %w", err)
+	}
+
+	// -------------------------------------------------------------------------
+	// Set up Messaging client connection
+
+	log.Info(ctx, "Messaging client startup", "status", "initializing messaging support", "host", config.Messaging.Host)
+
+	natsClient, err := nats.NewNATSClient(messaging.Config{
+		User: 		config.Messaging.User,
+		Password: 	config.Messaging.Password,
+		Host: 		config.Messaging.Host,
+	})
+	if err != nil {
+		return fmt.Errorf( "error connecting to NATS: %w", err)
+	}
+	defer func() {
+		log.Info(ctx, "Messaging client shutdown", "status", "stopping messaging support", "host", config.Messaging.Host)
+		natsClient.Close()
+	}()
+
+	err = natsClient.StatusCheck(); if err != nil {
+		return fmt.Errorf("error messaging client status check: %w", err)
 	}
 
 	// -------------------------------------------------------------------------
@@ -158,6 +182,7 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 		Auth: auth,
 		SQLDB: mysqlClient,
 		NOSQLDB: mongoClient,
+		Messaging: natsClient,
 		IdGen: snowflakeGen,
 	}
 

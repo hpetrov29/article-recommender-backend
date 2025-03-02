@@ -31,6 +31,11 @@ type GlobalConfig struct {
 		Name         string `env:"NOSQLDB_NAME, required"`
 		MaxOpenConns int    `env:"NOSQLDB_MAX_OPEN_CONNECTIONS, default=0"`
 	}
+	Messaging struct {
+		User         string `env:"MESSAGING_USER, required"`
+		Password     string `env:"MESSAGING_PASSWORD, required"`
+		Host         string `env:"MESSAGING_HOST"`
+	}
 	Auth struct {
 		KeysFolder string `env:"KEY_PATH, default=./zarf/keys/"`
 		Issuer     string `env:"ISSUER_NAME, default=service"`

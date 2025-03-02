@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hpetrov29/resttemplate/business/data/dbnosql"
+	"github.com/hpetrov29/resttemplate/business/data/messaging"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
 	"github.com/hpetrov29/resttemplate/internal/idgenerator"
 	"github.com/hpetrov29/resttemplate/internal/logger"
@@ -20,6 +21,7 @@ type APIMuxConfig struct {
 	Auth	 	*auth.Auth
 	SQLDB       *sqlx.DB
 	NOSQLDB 	dbnosql.NOSQLDB
+	Messaging 	messaging.MessagingQueue
 	IdGen 	 	*idgenerator.IdGenerator
 }
 

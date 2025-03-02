@@ -25,7 +25,7 @@ services:
 
   nats:
     image: nats:2.10
-    container_name: nats-server
+    container_name: nats-container
     ports:
       - "4222:4222"
       - "6222:6222"
@@ -36,6 +36,8 @@ services:
       - ./nats-server.conf:/etc/nats/nats-server.conf
       - nats_data:/data
     command: --config /etc/nats/nats-server.conf
+    networks:
+      - backend
 
   mongo:
     image: mongo:8.0
@@ -76,8 +78,8 @@ services:
       NOSQLDB_NAME: "${NOSQLDB_NAME}"
       PORT: "${PORT}"
       ALLOWED_ORIGINS: "${ALLOWED_ORIGINS}"
-      NATS_USER: "${NATS_USER}"
-      NATS_PASSWORD: "${NATS_PASSWORD}"
+      MESSAGING_USER: "${MESSAGING_USER}"
+      MESSAGING_PASSWORD: "${MESSAGING_PASSWORD}"
     ports:
       - "8000:8000"
     depends_on:
