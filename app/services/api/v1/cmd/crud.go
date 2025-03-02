@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/hpetrov29/resttemplate/app/services/api/v1/handlers/likes"
 	"github.com/hpetrov29/resttemplate/app/services/api/v1/handlers/posts"
 	"github.com/hpetrov29/resttemplate/app/services/api/v1/handlers/users"
 	v1 "github.com/hpetrov29/resttemplate/business/web/v1"
@@ -18,10 +19,10 @@ type add struct{}
 // Add implements the RouterAdder interface.
 func (add) Add(app *web.App, cfg v1.APIMuxConfig) {
 	users.Routes(app, users.Config{
-		Log:   cfg.Log,
-		Auth:  cfg.Auth,
-		DB:    cfg.SQLDB,
-		IdGen: cfg.IdGen,
+		Log:   		cfg.Log,
+		Auth:  		cfg.Auth,
+		DB:    		cfg.SQLDB,
+		IdGen: 		cfg.IdGen,
 	})
 	posts.Routes(app, posts.Config{
 		Log:   		cfg.Log,
@@ -29,5 +30,10 @@ func (add) Add(app *web.App, cfg v1.APIMuxConfig) {
 		SQLDB:    	cfg.SQLDB,
 		NOSQLDB: 	cfg.NOSQLDB,
 		IdGen: 		cfg.IdGen,
+	})
+	likes.Routes(app, likes.Config{
+		Log:   		cfg.Log,
+		Auth:  		cfg.Auth,
+		Messaging: 	cfg.Messaging,
 	})
 }
