@@ -12,6 +12,10 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
+type MessageResponse struct {
+	Message string `json:"message"`
+}
+
 type ValidationErrorResponse struct {
 	Errors validate.FieldErrors `json:"errors"`
 }
@@ -38,6 +42,8 @@ func Respond(ctx context.Context, w http.ResponseWriter, statusCode int, data an
 		jsonData, err = json.Marshal(ValidationErrorResponse{Errors: e})
 	case error:
 		jsonData, err = json.Marshal(ErrorResponse{Error: e.Error()})
+	case string:
+		jsonData, err = json.Marshal(MessageResponse{Message: e})
 	default:
 		jsonData, err = json.Marshal(PayloadResponse{Paylaod: e})
 	}

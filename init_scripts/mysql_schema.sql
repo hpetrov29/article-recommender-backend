@@ -20,5 +20,25 @@ CREATE TABLE posts (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE comments (
+    id         BIGINT UNSIGNED PRIMARY KEY,
+    user_id    BIGINT UNSIGNED NOT NULL,
+    post_id    BIGINT UNSIGNED NOT NULL,
+    parent_id  BIGINT UNSIGNED DEFAULT NULL,
+    content    VARCHAR(10000) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_comments_user FOREIGN KEY (user_id) 
+        REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_comments_post FOREIGN KEY (post_id) 
+        REFERENCES posts(id) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_comments_parent FOREIGN KEY (parent_id) 
+        REFERENCES comments(id) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    INDEX idx_comments_post_id (post_id)
+);
+
 
 

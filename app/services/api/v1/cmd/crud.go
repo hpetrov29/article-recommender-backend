@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/hpetrov29/resttemplate/app/services/api/v1/handlers/comments"
 	"github.com/hpetrov29/resttemplate/app/services/api/v1/handlers/likes"
 	"github.com/hpetrov29/resttemplate/app/services/api/v1/handlers/posts"
 	"github.com/hpetrov29/resttemplate/app/services/api/v1/handlers/users"
@@ -35,5 +36,11 @@ func (add) Add(app *web.App, cfg v1.APIMuxConfig) {
 		Log:   		cfg.Log,
 		Auth:  		cfg.Auth,
 		Messaging: 	cfg.Messaging,
+	})
+	comments.Routes(app, comments.Config{
+		Log:   		cfg.Log,
+		Auth:  		cfg.Auth,
+		SQLDB:    	cfg.SQLDB,
+		IdGen: 		cfg.IdGen,
 	})
 }
