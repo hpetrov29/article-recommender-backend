@@ -253,3 +253,73 @@ func namedQuerySlice[T any](ctx context.Context, log *logger.Logger, db sqlx.Ext
 
 	return nil
 }
+
+// NamedQueryStructAndSlice is a generic function designed to execute a SQL query
+// that returns two separate result sets: the first set is a single struct, and
+// the second set is a slice of structs. The function retrieves and scans the first
+// result set into a single struct and the second result set into a slice of structs
+// of a specified type T
+func NamedQueryStructAndSlice[T any] (ctx context.Context, log *logger.Logger, db sqlx.ExtContext, query string, data any, destStruct any, destSlice *[]T) error {
+	return namedQueryStructAndSlice(ctx, log, db, query, data, destStruct, destSlice, false)
+}
+
+func namedQueryStructAndSlice[T any] (ctx context.Context, log *logger.Logger, db sqlx.ExtContext, query string, data any, destStruct any, destSlice *[]T, withIn bool) error {
+	q := queryString(query, data)
+
+	log.Infoc(ctx, 5, "database.NamedQuerySlice", "query", q)
+
+	var rows *sqlx.Rows
+	var err error
+
+	switch withIn {
+	case true:
+		rows, err = func() (*sqlx.Rows, error) {
+			named, args, err := sqlx.Named(query, data)
+			if err != nil {
+				return nil, err
+			}
+
+			query, args, err := sqlx.In(named, args...)
+			if err != nil {
+				return nil, err
+			}
+
+			query = db.Rebind(query)
+			return db.QueryxContext(ctx, query, args...)
+		}()
+
+	default:
+		rows, err = sqlx.NamedQueryContext(ctx, db, query, data)
+	}
+
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return ErrDBNotFound
+	}
+
+	if err := rows.StructScan(destStruct); err != nil {
+		return err
+	}
+
+	var slice []T
+	if !rows.NextResultSet() {
+		*destSlice = slice
+		return nil
+	}
+
+	for rows.Next() {
+		v := new(T)
+		if err := rows.StructScan(v); err != nil {
+			return err
+		}
+		slice = append(slice, *v)
+	}
+	*destSlice = slice
+
+	return nil
+
+}
