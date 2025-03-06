@@ -9,12 +9,12 @@ import (
 
 // AppPost represents the contents of a post in the app layer.
 type AppPost struct {
-	Id           	uint64   	`json:"id"`
-	UserId       	uint64	 	`json:"userId"`
+	Id           	int64   	`json:"id"`
+	UserId       	int64	 	`json:"userId"`
 	Title        	string   	`json:"title"`
 	Description 	string 		`json:"description"`
 	FrontImage  	string 		`json:"frontImage"`
-	ContentId   	uint64   	`json:"contentId"`
+	ContentId   	int64   	`json:"contentId"`
 	Content   		*Content   	`json:"content,omitempty"`
 	CreatedAt   	string   	`json:"createdAt"`
 	UpdatedAt  		string   	`json:"updatedAt"`
@@ -52,14 +52,15 @@ type AppNewPost struct {
 	Content 		 Content 	  `json:"content" validate:"required"`
 }
 
-func toCoreNewPost(app AppNewPost) (post.NewPost, error) {
+func toCoreNewPost(app AppNewPost, userId int64) post.NewPost {
 	post := post.NewPost{
+		UserId: userId,
 		Title: app.Title,
 		Description: app.Description,
 		Content:     toCoreContent(app.Content),
 	}
 
-	return post, nil
+	return post
 }
 
 // Validate checks the data in the model is considered clean.

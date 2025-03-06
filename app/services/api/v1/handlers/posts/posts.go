@@ -35,7 +35,7 @@ func (h *Handlers) CreatePost(ctx context.Context, w http.ResponseWriter, r *htt
 		return web.Respond(ctx, w, http.StatusUnauthorized, errors.New("authentication failed"))
 	}
 
-	userId, err := strconv.ParseUint(claims.Subject, 10, 64) // Base 10, 64-bit unsigned integer
+	userId, err := strconv.ParseInt(claims.Subject, 10, 64) // Base 10, 64-bit unsigned integer
 	if err != nil {
 		return web.Respond(ctx, w, http.StatusUnauthorized, fmt.Errorf("authentication failed: %w", err))
 	}
@@ -44,13 +44,8 @@ func (h *Handlers) CreatePost(ctx context.Context, w http.ResponseWriter, r *htt
 		return web.Respond(ctx, w, http.StatusBadRequest, err)
 	}
 
-	coreNewPost, err := toCoreNewPost(appNewPost)
+	coreNewPost := toCoreNewPost(appNewPost, userId)
 
-	if err != nil {
-		return web.Respond(ctx, w, http.StatusBadRequest, err)
-	}
-
-	coreNewPost.UserId = userId
 	post, err := h.post.Create(ctx, coreNewPost)
 	if err != nil {
 		return web.Respond(ctx, w, http.StatusInternalServerError, err)
@@ -60,7 +55,7 @@ func (h *Handlers) CreatePost(ctx context.Context, w http.ResponseWriter, r *htt
 }
 
 func (h *Handlers) QueryById(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	id, err := strconv.ParseUint(web.Param(r, "id"), 10, 64); if err != nil {
+	id, err := strconv.ParseInt(web.Param(r, "id"), 10, 64); if err != nil {
 		return web.Respond(ctx, w, http.StatusBadRequest, err)
 	}
 

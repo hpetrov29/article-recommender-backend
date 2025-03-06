@@ -12,7 +12,7 @@ import (
 // dbUser represents the structure used to transfer user data
 // between the application and the database.
 type dbUser struct {
-	Id           	uint64      		`db:"id"`
+	Id           	int64      		`db:"id"`
 	Username     	string      		`db:"username"`
 	Email        	string         		`db:"email"`
 	Roles        	dbarray.String 		`db:"roles"`

@@ -9,12 +9,12 @@ import (
 // dbPost represents the structure used to transfer post data
 // between the application and the database.
 type dbPost struct {
-	Id          uint64    `db:"id"`
-	UserId      uint64    `db:"user_id"`
+	Id          int64    `db:"id"`
+	UserId      int64    `db:"user_id"`
 	Title       string    `db:"title"`
 	Description string    `db:"description"`
 	FrontImage  string    `db:"front_image"`
-	ContentId   uint64    `db:"content_id"`
+	ContentId   int64    `db:"content_id"`
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
 }

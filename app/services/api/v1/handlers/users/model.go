@@ -11,7 +11,7 @@ import (
 
 // AppUser represents information about an individual user.
 type AppUser struct {
-	Id           uint64   `json:"id"`
+	Id           int64   `json:"id"`
 	Username     string   `json:"username"`
 	Email        string   `json:"email"`
 	Roles        []string `json:"roles"`

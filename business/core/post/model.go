@@ -10,12 +10,12 @@ import (
 // Post struct contains information about an individual user.
 // Meant to be used at the service/core layer
 type Post struct {
-	Id          uint64
-	UserId      uint64
+	Id          int64
+	UserId      int64
 	Title       string
 	Description string
 	FrontImage  string
-	ContentId   uint64
+	ContentId   int64
 	Content 	Content
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
@@ -24,7 +24,7 @@ type Post struct {
 // NewPost contains information required to create a new user.
 // Meant to be used at the service/core layer
 type NewPost struct {
-	UserId      uint64
+	UserId      int64
 	Title       string
 	Description string
 	Content 	Content

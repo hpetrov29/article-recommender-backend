@@ -3,17 +3,17 @@ package comment
 import "time"
 
 type Comment struct {
-	Id     	   	uint64
-	UserId 		uint64
-	PostId		uint64
-	ParentId 	uint64
+	Id     	   	int64
+	UserId 		int64
+	PostId		int64
+	ParentId 	int64
 	Content   	string
 	CreatedAt 	time.Time
 }
 
 type NewComment struct {
-	UserId 		uint64		
-	PostId		uint64
-	ParentId  	uint64 
+	UserId 		int64		
+	PostId		int64
+	ParentId  	int64 
 	Content   	string
 }

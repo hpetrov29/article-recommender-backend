@@ -5,7 +5,7 @@ import (
 )
 
 type Content struct {
-	Id 		uint64 	`bson:"_id"`
+	Id 		int64 	`bson:"_id"`
 	Blocks 	[]Block `bson:"blocks"`
 }
 

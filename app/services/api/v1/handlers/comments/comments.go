@@ -41,7 +41,7 @@ func (h *Handlers) CreateComment(ctx context.Context, w http.ResponseWriter, r *
 		return web.Respond(ctx, w, http.StatusBadRequest, fmt.Errorf("error parsing post_id param: %w", err))
 	}
 
-	coreNewComment := toCoreNewComment(newComment, userId, postId)
+	coreNewComment := toCoreNewComment(newComment, int64(userId), int64(postId))
 
 	coreComement, err := h.comment.Create(ctx, coreNewComment)
 	if err != nil {

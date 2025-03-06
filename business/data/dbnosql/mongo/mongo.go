@@ -83,7 +83,7 @@ func (r *MongoRepository) Insert(ctx context.Context, record interface{}) error 
 }
 
 // QueryById retrieves a record with the specified id from the MongoDB collection.
-func (r *MongoRepository) QueryById(ctx context.Context, id uint64, data any) error {
+func (r *MongoRepository) QueryById(ctx context.Context, id int64, data any) error {
 	if data == nil {
         return errors.New("(*MongoRepository) QueryById expects data to be a non-nil pointer")
     }

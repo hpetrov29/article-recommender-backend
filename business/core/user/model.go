@@ -8,7 +8,7 @@ import (
 // User struct contains information about an individual user.
 // Meant to be used at the service/core layer
 type User struct {
-	Id uint64
+	Id int64
 	Username string
 	Email mail.Address
 	Roles []Role

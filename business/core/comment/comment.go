@@ -50,7 +50,7 @@ func (c *Core) Create(ctx context.Context, newComment NewComment) (Comment, erro
 	}
 
 	comment := Comment{
-		Id: commentId,
+		Id: int64(commentId),
 		UserId: newComment.UserId,
 		PostId: newComment.PostId,
 		ParentId: newComment.ParentId,

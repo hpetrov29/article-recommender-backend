@@ -75,7 +75,7 @@ func (c *Core) Create(ctx context.Context, newUser NewUser) (User, error) {
 	}
 
 	usr := User{
-		Id:          	id,
+		Id:          	int64(id),
 		Username:     	newUser.Username,
 		Email:        	newUser.Email,
 		PasswordHash: 	hash,

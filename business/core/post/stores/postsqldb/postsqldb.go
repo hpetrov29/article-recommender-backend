@@ -71,7 +71,7 @@ func (s *Store) Create(ctx context.Context, post post.Post) (sql.Result, error) 
 //   - error: an error if the deletion fails. If successful, returns nil.
 func (s *Store) Delete(ctx context.Context, post post.Post) error {
 	data := struct {
-		PostId uint64 `db:"id"`
+		PostId int64 `db:"id"`
 	}{
 		PostId: post.Id,
 	}
@@ -89,9 +89,9 @@ func (s *Store) Delete(ctx context.Context, post post.Post) error {
 	return nil
 }
 
-func (s *Store) QueryById(ctx context.Context, id uint64) (post.Post, error) {
+func (s *Store) QueryById(ctx context.Context, id int64) (post.Post, error) {
 	data := struct {
-		Id uint64 `db:"id"`
+		Id int64 `db:"id"`
 	}{
 		Id: id,
 	}

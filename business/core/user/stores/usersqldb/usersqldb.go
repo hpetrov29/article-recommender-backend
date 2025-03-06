@@ -73,7 +73,7 @@ func (s *Store) Create(ctx context.Context, usr user.User) (sql.Result, error) {
 //   - error: an error if the deletion fails. If successful, returns nil.
 func (s *Store) Delete(ctx context.Context, usr user.User) error {
 	data := struct {
-		UserID uint64 `db:"id"`
+		UserID int64 `db:"id"`
 	}{
 		UserID: usr.Id,
 	}

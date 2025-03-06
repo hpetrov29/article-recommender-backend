@@ -7,20 +7,20 @@ import (
 )
 
 type Comment struct {
-	Id     	   	uint64 		`json:"id"`
-	UserId 		uint64 		`json:"userId"`
-	PostId		uint64 		`json:"postId"`
-	ParentId 	uint64 		`json:"parentId"`
+	Id     	   	int64 		`json:"id"`
+	UserId 		int64 		`json:"userId"`
+	PostId		int64 		`json:"postId"`
+	ParentId 	int64 		`json:"parentId"`
 	Content   	string 		`json:"content"`
 	CreatedAt 	time.Time 	`json:"createdAt"`
 }
 
 type NewComment struct {
-	ParentId  	uint64 `json:"parentId" validate:"omitempty"`
+	ParentId  	int64 `json:"parentId" validate:"omitempty"`
 	Content   	string `json:"content" validate:"required"`
 }
 
-func toCoreNewComment(c NewComment, userId uint64, postId uint64) comment.NewComment {
+func toCoreNewComment(c NewComment, userId int64, postId int64) comment.NewComment {
 	return comment.NewComment{
 		UserId: userId,
 		PostId: postId,
