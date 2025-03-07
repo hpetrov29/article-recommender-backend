@@ -15,6 +15,11 @@ type GlobalConfig struct {
 		ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT, default=20s"`
 		//DebugHost       string          `conf:"default:0.0.0.0:4000"`
 	}
+	Cache struct {
+		Password 	string		`env:"CACHE_PASSWORD, required"`
+		Host 		string		`env:"CACHE_HOST, required"`
+		DbName		int			`env:"CACHE_DB_NAME, default=0"`
+	}
 	SQLDB struct {
 		User         string `env:"SQLDB_USER, required"`
 		Password     string `env:"SQLDB_PASSWORD, required"`

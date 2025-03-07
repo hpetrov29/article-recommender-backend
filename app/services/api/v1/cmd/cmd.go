@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"syscall"
 
+	"github.com/hpetrov29/resttemplate/business/data/cache"
+	"github.com/hpetrov29/resttemplate/business/data/cache/redis"
 	"github.com/hpetrov29/resttemplate/business/data/dbnosql"
 	"github.com/hpetrov29/resttemplate/business/data/dbnosql/mongo"
 	mysql "github.com/hpetrov29/resttemplate/business/data/dbsql/mysql"
@@ -63,6 +65,27 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 	config.Version.Build = build
 	if err := envconfig.Process(ctx, &config); err != nil {
 		return fmt.Errorf("error while parsing env variables/config: %w", err)
+	}
+
+	// -------------------------------------------------------------------------
+	// Set up Cache client connection
+
+	log.Info(ctx, "Cache startup", "status", "initializing cache support", "host", config.Cache.Host)
+
+	var redisClient redis.RedisClient
+	if err := redisClient.Open(ctx, cache.Config{
+		Password: config.Cache.Password,
+		Host: config.Cache.Host,
+		DbName: config.Cache.DbName,
+	}); err != nil {
+		return fmt.Errorf( "failed to connect to cache service: %w", err)
+	}
+	defer func() {
+		log.Info(ctx, "Cache shutdown", "status", "stopping cache support", "host", config.Cache.Host)
+		redisClient.Close()
+	}()
+	err := redisClient.StatusCheck(ctx); if err != nil {
+		return fmt.Errorf("error cache status check: %w", err)
 	}
 	
 	// -------------------------------------------------------------------------

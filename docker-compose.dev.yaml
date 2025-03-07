@@ -86,6 +86,9 @@ services:
     image: golang-api:latest
     container_name: golang-api
     environment:
+      CACHE_PASSWORD: "${CACHE_PASSWORD}"
+      CACHE_HOST: "${CACHE_HOST}"
+      CACHE_DB_NAME: "${CACHE_DB_NAME}"
       SQLDB_USER: "${SQLDB_USER}"
       SQLDB_PASSWORD: "${SQLDB_PASSWORD}"
       SQLDB_HOST: "${SQLDB_HOST}"
