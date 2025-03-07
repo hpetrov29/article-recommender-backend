@@ -4,11 +4,10 @@ import (
 	"time"
 )
 
-//////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 // Post metadata related models
 
-// Post struct contains information about an individual user.
-// Meant to be used at the service/core layer
+// Post struct contains all information about a single post
 type Post struct {
 	Id          int64
 	UserId      int64
@@ -17,11 +16,12 @@ type Post struct {
 	FrontImage  string
 	ContentId   int64
 	Content 	Content
+	Comments 	[]Comment
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
 
-// NewPost contains information required to create a new user.
+// NewPost contains information required to create a new post
 // Meant to be used at the service/core layer
 type NewPost struct {
 	UserId      int64
@@ -30,16 +30,16 @@ type NewPost struct {
 	Content 	Content
 }
 
-// UpdatePost contains information required to update a user.
+// UpdatePost contains information required to update a post
 // Meant to be used at the service/core layer
 type UpdatePost struct {
 	
 }
 
-//////////////////////////////////////////////////////////////////////////////
+// =============================================================================
 // Post content related models
 
-// Content contains the entire content of a post.
+// Content contains the entire content of a post
 type Content struct {
 	Blocks []Block
 }
@@ -53,9 +53,21 @@ type Block struct {
 	Caption string
 }
 
-// Style contains text styling information (e.g., bold, italic), offset and length.
+// Style contains text styling information (e.g., bold, italic), offset and length
 type Style struct {
 	Offset int
 	Length int
 	Style  string
+}
+
+// =============================================================================
+// Comment content related models
+
+// Comment struct contains all information about a comment associated to a post
+type Comment struct {
+	Id     	   	int64
+	UserId 		int64
+	ParentId 	int64
+	Content   	string
+	CreatedAt 	time.Time
 }

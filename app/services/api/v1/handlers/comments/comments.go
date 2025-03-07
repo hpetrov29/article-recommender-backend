@@ -25,7 +25,7 @@ func New(cc *comment.Core, auth *auth.Auth) *Handlers {
 }
 
 func (h *Handlers) CreateComment(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var newComment NewComment
+	var newComment NewAppComment
 
 	userId, err := strconv.ParseUint(auth.GetClaims(ctx).Subject, 10, 64) // Base 10, 64-bit unsigned integer
 	if err != nil {

@@ -9,15 +9,16 @@ import (
 
 // AppPost represents the contents of a post in the app layer.
 type AppPost struct {
-	Id           	int64   	`json:"id"`
-	UserId       	int64	 	`json:"userId"`
-	Title        	string   	`json:"title"`
-	Description 	string 		`json:"description"`
-	FrontImage  	string 		`json:"frontImage"`
-	ContentId   	int64   	`json:"contentId"`
-	Content   		*Content   	`json:"content,omitempty"`
-	CreatedAt   	string   	`json:"createdAt"`
-	UpdatedAt  		string   	`json:"updatedAt"`
+	Id           	int64   		`json:"id"`
+	UserId       	int64	 		`json:"userId"`
+	Title        	string   		`json:"title"`
+	Description 	string 			`json:"description"`
+	FrontImage  	string 			`json:"frontImage"`
+	ContentId   	int64   		`json:"contentId"`
+	Content   		*AppContent   	`json:"content,omitempty"`
+	Comments        []AppComment 	`json:"comments,omitempty"`
+	CreatedAt   	string   		`json:"createdAt"`
+	UpdatedAt  		string   		`json:"updatedAt"`
 }
 
 func toAppPost(post post.Post) AppPost {
@@ -29,11 +30,13 @@ func toAppPost(post post.Post) AppPost {
 	FrontImage:		post.FrontImage,
 	ContentId: 		post.ContentId,
 	Content: 		toAppContent(post.Content),
+	Comments: 		toAppComments(post.Comments),
 	CreatedAt: 		post.CreatedAt.Format(time.RFC3339),
 	UpdatedAt:  	post.UpdatedAt.Format(time.RFC3339),
 	}
 }
 
+// Converts a slice of post.Post (core layer) to a slice of AppPost (app layer)
 func toAppPosts(posts []post.Post) []AppPost {
 	items := make([]AppPost, len(posts))
 	for i, post := range posts {
@@ -47,9 +50,9 @@ func toAppPosts(posts []post.Post) []AppPost {
 
 // AppNewUser contains information needed to create a new user.
 type AppNewPost struct {
-	Title            string   	  `json:"title" validate:"required"`
-	Description      string   	  `json:"description" validate:"required"`
-	Content 		 Content 	  `json:"content" validate:"required"`
+	Title            string   	  	`json:"title" validate:"required"`
+	Description      string   	  	`json:"description" validate:"required"`
+	Content 		 AppContent 	`json:"content" validate:"required"`
 }
 
 func toCoreNewPost(app AppNewPost, userId int64) post.NewPost {
@@ -93,35 +96,35 @@ func (up AppUpdatePost) Validate() error {
 // Content related models and functions
 
 // Content contains the entire content of a post.
-type Content struct {
-	Blocks []Block `json:"blocks,omitempty" validate:"required,min=1,dive"`
+type AppContent struct {
+	Blocks []AppBlock `json:"blocks,omitempty" validate:"required,min=1,dive"`
 }
 
 // Block contains information about each content block such as type, styling, url, etc.
-type Block struct {
-	Type    string    `json:"type" validate:"required"`
-	Content string    `json:"content,omitempty"`
-	Styles  []Style   `json:"styles,omitempty"`
-	URL     string    `json:"url,omitempty"`
-	Caption string    `json:"caption,omitempty"`
+type AppBlock struct {
+	Type    string    	`json:"type" validate:"required"`
+	Content string    	`json:"content,omitempty"`
+	Styles  []AppStyle  `json:"styles,omitempty"`
+	URL     string    	`json:"url,omitempty"`
+	Caption string    	`json:"caption,omitempty"`
 }
 
 // Style contains text styling information (e.g., bold, italic), offset and length.
-type Style struct {
+type AppStyle struct {
 	Offset int    `json:"offset" validate:"required"`
 	Length int    `json:"length" validate:"required"`
 	Style  string `json:"style" validate:"required"`
 }
 
-// Converts app.Content (app layer) to post.Content (core layer)
-func toCoreContent(c Content) post.Content {
+// Converts AppContent (app layer) to post.Content (core layer)
+func toCoreContent(c AppContent) post.Content {
 	return post.Content{
 		Blocks: toCoreBlocks(c.Blocks),
 	}
 }
 
-// Converts a slice of app.Block (app layer) to post.Block (core layer)
-func toCoreBlocks(blocks []Block) []post.Block {
+// Converts a slice of AppBlock (app layer) to post.Block (core layer)
+func toCoreBlocks(blocks []AppBlock) []post.Block {
 	converted := make([]post.Block, len(blocks))
 	for i, b := range blocks {
 		converted[i] = post.Block{
@@ -135,8 +138,8 @@ func toCoreBlocks(blocks []Block) []post.Block {
 	return converted
 }
 
-// Converts a slice of app.Style (app layer) to post.Style (core layer)
-func toCoreStyles(styles []Style) []post.Style {
+// Converts a slice of AppStyle (app layer) to post.Style (core layer)
+func toCoreStyles(styles []AppStyle) []post.Style {
 	converted := make([]post.Style, len(styles))
 	for i, s := range styles {
 		converted[i] = post.Style{
@@ -148,21 +151,21 @@ func toCoreStyles(styles []Style) []post.Style {
 	return converted
 }
 
-// Converts post.Content (core layer) to app.Content (app layer)
-func toAppContent(c post.Content) *Content {
+// Converts post.Content (core layer) to AppContent (app layer)
+func toAppContent(c post.Content) *AppContent {
 	if len(c.Blocks) == 0 {
 		return nil
 	}
-	return &Content{
+	return &AppContent{
 		Blocks: toAppBlocks(c.Blocks),
 	}
 }
 
-// Converts a slice of post.Block (core layer) to app.Block (app layer)
-func toAppBlocks(blocks []post.Block) []Block {
-	converted := make([]Block, len(blocks))
+// Converts a slice of post.Block (core layer) to AppBlock (app layer)
+func toAppBlocks(blocks []post.Block) []AppBlock {
+	converted := make([]AppBlock, len(blocks))
 	for i, b := range blocks {
-		converted[i] = Block{
+		converted[i] = AppBlock{
 			Type:    b.Type,
 			Content: b.Content,
 			Styles:  toAppStyles(b.Styles),
@@ -173,15 +176,49 @@ func toAppBlocks(blocks []post.Block) []Block {
 	return converted
 }
 
-// Converts a slice of post.Style (core layer) to app.Style (app layer)
-func toAppStyles(styles []post.Style) []Style {
-	converted := make([]Style, len(styles))
+// Converts a slice of post.Style (core layer) to AppStyle (app layer)
+func toAppStyles(styles []post.Style) []AppStyle {
+	converted := make([]AppStyle, len(styles))
 	for i, s := range styles {
-		converted[i] = Style{
+		converted[i] = AppStyle{
 			Offset: s.Offset,
 			Length: s.Length,
 			Style:  s.Style,
 		}
 	}
 	return converted
+}
+
+// =============================================================================
+// Comment related models and functions
+
+// AppComment represents the contents of a post comment in the app layer.
+type AppComment struct {
+	Id     	   	int64 		`json:"id"`
+	UserId 		int64 		`json:"userId"`
+	ParentId 	int64 		`json:"parentId"`
+	Content   	string 		`json:"content"`
+	CreatedAt 	time.Time 	`json:"createdAt"`
+}
+
+// Converts post.Comment (core layer) to AppComment (app layer)
+func toAppComment(comment post.Comment) AppComment {
+	return AppComment{
+		Id: comment.Id,
+		UserId: comment.UserId,
+		ParentId: comment.ParentId,
+		Content: comment.Content,
+		CreatedAt: comment.CreatedAt,
+	}
+}
+
+// Converts a slice of post.Comment (core layer) to a slice of AppComment (app layer)
+func toAppComments(comments []post.Comment) []AppComment {
+	slice := make([]AppComment, len(comments))
+
+	for i, c := range comments {
+		slice[i] = toAppComment(c)
+	}
+
+	return slice
 }

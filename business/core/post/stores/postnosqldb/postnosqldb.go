@@ -47,7 +47,7 @@ func (s *Store) Delete(ctx context.Context, post post.Post) error {
 
 func (s *Store) QueryById(ctx context.Context, id int64) (post.Post, error) {
 	res, err := s.SQLstore.QueryById(ctx, id); if err != nil {
-		return post.Post{}, nil
+		return post.Post{}, err
 	}
 	
 	var content Content

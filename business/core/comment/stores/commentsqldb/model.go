@@ -26,3 +26,25 @@ func toDBComment(c comment.Comment) Comment {
 		CreatedAt: c.CreatedAt,
 	}
 }
+
+func ToCoreComment(c Comment) comment.Comment {
+	return comment.Comment{
+		Id: c.Id,
+		UserId: c.UserId,
+		PostId: c.PostId,
+		ParentId: c.ParentId.Int64,
+		Content: c.Content,
+		CreatedAt: c.CreatedAt,
+	}
+}
+
+func ToCoreComments(comments []Comment) []comment.Comment {
+	var slice []comment.Comment
+
+	for _, c := range comments {
+		cc := ToCoreComment(c)
+		slice = append(slice, cc)
+	}
+
+	return slice
+}

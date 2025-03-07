@@ -96,17 +96,25 @@ func (s *Store) QueryById(ctx context.Context, id int64) (post.Post, error) {
 		Id: id,
 	}
 
-	const q = `SELECT * FROM posts WHERE id = :id`
-
+	const postQuery = `SELECT id, user_id, title, description, front_image, content_id, created_at, updated_at FROM posts WHERE id = :id;`
+	const commentsQuery = `WITH RECURSIVE comment_tree AS (SELECT id, user_id, parent_id, content, created_at, 1 AS level FROM comments WHERE post_id = :id AND parent_id IS NULL UNION ALL SELECT c.id, c.user_id, c.parent_id, c.content, c.created_at, ct.level + 1 FROM comments c INNER JOIN comment_tree ct ON c.parent_id = ct.id) SELECT id, user_id, parent_id, content, created_at FROM comment_tree ORDER BY level ASC, created_at ASC;`
+	
 	var dbPost dbPost
-	if err := mysql.NamedQueryStruct(ctx, s.log, s.db, q, data, &dbPost); err != nil {
+	var dbComments []dbComment
+
+	if err := mysql.NamedQueryStruct(ctx, s.log, s.db, postQuery, data, &dbPost); err != nil {
 		if errors.Is(err, mysql.ErrDBNotFound) {
 			return post.Post{}, fmt.Errorf("namedquerystruct: %w", post.ErrNotFound)
 		}
 		return post.Post{}, fmt.Errorf("namedquerystruct: %w", err)
 	}
 
+	if err := mysql.NamedQuerySlice(ctx, s.log, s.db, commentsQuery, data, &dbComments); err != nil {
+		return post.Post{}, fmt.Errorf("namedquerystruct: %w", err)
+	}
+
 	post := toCorePost(dbPost)
+	post.Comments = toCoreComments(dbComments)
 
 	return post, nil
 }

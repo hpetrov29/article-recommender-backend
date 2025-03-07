@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/hpetrov29/resttemplate/business/core/post"
 	"github.com/hpetrov29/resttemplate/business/data/page"
@@ -59,15 +58,16 @@ func (h *Handlers) QueryById(ctx context.Context, w http.ResponseWriter, r *http
 		return web.Respond(ctx, w, http.StatusBadRequest, err)
 	}
 
-	post, err := h.post.QueryById(ctx, id)
+	corePost, err := h.post.QueryById(ctx, id)
 	if err != nil {
-		if strings.Contains(err.Error(), "post not found") {	
+		if errors.Is(err, post.ErrNotFound) {	
 			return web.Respond(ctx, w, http.StatusNotFound, err)
 		}
+		
 		return web.Respond(ctx, w, http.StatusInternalServerError, err)
 	}
 	
-	return web.Respond(ctx, w, http.StatusOK, toAppPost(post))
+	return web.Respond(ctx, w, http.StatusOK, toAppPost(corePost))
 }
 
 func (h *Handlers) Query(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
