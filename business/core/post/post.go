@@ -2,7 +2,6 @@ package post
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -17,10 +16,32 @@ var (
 )
 
 type Storer interface {
-	Create(ctx context.Context, post Post) (sql.Result, error)
+	Create(ctx context.Context, post Post) (error)
 	Delete(ctx context.Context, post Post) error
 	QueryById(ctx context.Context, id int64) (Post, error)
 	Query(ctx context.Context, filter QueryFilter, orderBy order.OrderBy, pageNumber int, rowsPerPage int) ([]Post, error)
+}
+
+type CacheStore interface {
+	CreatePost(context.Context, Post) (error)
+	QueryPostById(context.Context, int64) (Post, bool, error)
+	DeletePost(context.Context, int64) error
+	CreateComments(context.Context, int64, []Comment) error
+	QueryCommensByPostId(context.Context, int64) ([]Comment, error)
+	DeleteCommentsByPostId(context.Context, int64) error
+}
+
+type SQLstore interface {
+	Create(context.Context, Post) (error)
+	Delete(context.Context, int64) error
+	QueryById(context.Context, int64) (Post, error)
+	Query(ctx context.Context, filter QueryFilter, orderBy order.OrderBy, pageNumber int, rowsPerPage int) ([]Post, error)
+}
+
+type NOSQLStore interface {
+	Create(context.Context, Content, int64) (error)
+	Delete(context.Context, int64) error
+	QueryById(context.Context, int64) (Content, error)
 }
 
 type IdGenerator interface {
@@ -77,7 +98,7 @@ func (c *Core) Create(ctx context.Context, newPost NewPost) (Post, error) {
 		UpdatedAt: now,
 	}
 	
-	if _, err := c.storer.Create(ctx, post); err != nil {
+	if err := c.storer.Create(ctx, post); err != nil {
 		return Post{}, fmt.Errorf("error creating a post: %w", err)
 	}
 	return post, nil

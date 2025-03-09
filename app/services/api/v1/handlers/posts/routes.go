@@ -4,8 +4,11 @@ import (
 	"net/http"
 
 	"github.com/hpetrov29/resttemplate/business/core/post"
+	"github.com/hpetrov29/resttemplate/business/core/post/stores/postcache"
 	"github.com/hpetrov29/resttemplate/business/core/post/stores/postnosqldb"
+	"github.com/hpetrov29/resttemplate/business/core/post/stores/postorchestrator"
 	"github.com/hpetrov29/resttemplate/business/core/post/stores/postsqldb"
+	"github.com/hpetrov29/resttemplate/business/data/cache"
 	"github.com/hpetrov29/resttemplate/business/data/dbnosql"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
 	"github.com/hpetrov29/resttemplate/business/web/v1/middleware"
@@ -19,6 +22,7 @@ import (
 type Config struct {
 	Log  		*logger.Logger
 	Auth 		*auth.Auth
+	Cache 		cache.Cache
 	SQLDB   	*sqlx.DB
 	NOSQLDB 	dbnosql.NOSQLDB
 	IdGen 		*idgenerator.IdGenerator
@@ -34,8 +38,10 @@ func Routes(app *web.App, cfg Config) {
 	nosqlRepo := cfg.NOSQLDB.GetRepository("posts")
 
 	sqlStore := postsqldb.NewStore(cfg.Log, cfg.SQLDB)
-	hybridStore := postnosqldb.NewStore(cfg.Log, sqlStore, nosqlRepo)
-
+	nosqlStore := postnosqldb.NewStore(cfg.Log, nosqlRepo)
+	cacheStore := postcache.NewStore(cfg.Log, cfg.Cache)
+	hybridStore := postorchestrator.NewStore(cfg.Log, cacheStore, sqlStore, nosqlStore)
+	
 	userService := post.NewCore(hybridStore, cfg.Log, cfg.IdGen)
 
 	handlers := New(userService, cfg.Auth)

@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -47,6 +48,40 @@ func (rc *RedisClient) Close() error {
 func (rc *RedisClient) Set(ctx context.Context, key string, value []byte) error {
 	if err := rc.c.Set(ctx, key, value, 0).Err(); err != nil {
 		return fmt.Errorf("error inserting key-value pair with key '%s' into Redis: %w", key, err)
+	}
+	return nil
+}
+
+func (rc *RedisClient) HSetWithTTL(ctx context.Context, key string, pairs map[string]interface{}, ttl time.Duration) error {
+	if (ttl <= 0) { 
+		return errors.New("expiry must be a positive value")
+	}
+
+	err := rc.c.HSet(ctx, key, pairs).Err()
+	if err != nil {
+		return fmt.Errorf("failed to set hash fields for key %s: %w", key, err)
+	}
+
+	err = rc.c.Expire(ctx, key, ttl).Err()
+	if err != nil {
+		return fmt.Errorf("failed to set TTL for key %s: %w", key, err)
+	}
+
+	return nil
+}
+
+func (rc *RedisClient) HVals(ctx context.Context, key string, field string) ([]string, error) {
+	values, err := rc.c.HVals(ctx, key).Result()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get values from hash for key %s: %w", key, err)
+	}
+	return values, nil
+}
+
+func (rc *RedisClient) HSetField(ctx context.Context, key string, field string, value interface{}) error {
+	err := rc.c.HSet(ctx, key, field, value).Err()
+	if err != nil {
+		return fmt.Errorf("failed to set field %s in hash for key %s: %w", field, key, err)
 	}
 	return nil
 }

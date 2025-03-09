@@ -3,7 +3,6 @@ package postsqldb
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 
@@ -36,6 +35,15 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 	}
 }
 
+/*
+type SQLstore interface {
+	Create(context.Context, Post) (error)
+	Delete(context.Context, Post) error
+	QueryById(context.Context, int64) (Post, error)
+	Query(ctx context.Context, filter QueryFilter, orderBy order.OrderBy, pageNumber int, rowsPerPage int) ([]Post, error)
+}
+*/
+
 // Create inserts a new post record into the database.
 //
 // Parameters:
@@ -45,20 +53,20 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 // Returns:
 //   - sql.Result: the result of the SQL insert operation, containing details such as rows affected.
 //   - error: an error if the insertion fails.
-func (s *Store) Create(ctx context.Context, post post.Post) (sql.Result, error) {
+func (s *Store) Create(ctx context.Context, post post.Post) (error) {
 	const q = `
 	INSERT INTO posts
 		(id, user_id, title, description, content_id, created_at, updated_at)
 	VALUES
 		(:id, :user_id, :title, :description, :content_id, :created_at, :updated_at);`
 	
-	res, err := mysql.NamedExecContext(ctx, s.log, s.db, q, toDBPost(post)); 
+	_, err := mysql.NamedExecContext(ctx, s.log, s.db, q, toDBPost(post)); 
 	
 	if err != nil {
-		return nil, fmt.Errorf("namedexeccontext: %w", err)
+		return fmt.Errorf("namedexeccontext: %w", err)
 	}
 
-	return res, nil
+	return nil
 }
 
 // Delete removes a post from the database based on the post's Id.
@@ -69,11 +77,11 @@ func (s *Store) Create(ctx context.Context, post post.Post) (sql.Result, error) 
 //
 // Returns:
 //   - error: an error if the deletion fails. If successful, returns nil.
-func (s *Store) Delete(ctx context.Context, post post.Post) error {
+func (s *Store) Delete(ctx context.Context, id int64) error {
 	data := struct {
 		PostId int64 `db:"id"`
 	}{
-		PostId: post.Id,
+		PostId: id,
 	}
 
 	const q = `

@@ -28,10 +28,10 @@ type Style struct {
 //
 // Parameters:
 //   - post: the Post instance from which the content is retrieved.
-func toDbContent(post post.Post) Content {
+func toDbContent(content post.Content, contentId int64) Content {
 	return Content{
-		Id: 	post.ContentId,
-		Blocks: toDbBlocks(post.Content.Blocks),
+		Id: 	contentId,
+		Blocks: toDbBlocks(content.Blocks),
 	}
 }
 

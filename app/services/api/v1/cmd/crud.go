@@ -28,6 +28,7 @@ func (add) Add(app *web.App, cfg v1.APIMuxConfig) {
 	posts.Routes(app, posts.Config{
 		Log:   		cfg.Log,
 		Auth:  		cfg.Auth,
+		Cache: 		cfg.Cache,
 		SQLDB:    	cfg.SQLDB,
 		NOSQLDB: 	cfg.NOSQLDB,
 		IdGen: 		cfg.IdGen,

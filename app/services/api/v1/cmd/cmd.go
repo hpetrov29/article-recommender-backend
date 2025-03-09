@@ -72,7 +72,7 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 
 	log.Info(ctx, "Cache startup", "status", "initializing cache support", "host", config.Cache.Host)
 
-	var redisClient redis.RedisClient
+	redisClient := &redis.RedisClient{}
 	if err := redisClient.Open(ctx, cache.Config{
 		Password: config.Cache.Password,
 		Host: config.Cache.Host,
@@ -203,6 +203,7 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 		Shutdown: shutdown,
 		Log: log,
 		Auth: auth,
+		Cache: redisClient,
 		SQLDB: mysqlClient,
 		NOSQLDB: mongoClient,
 		Messaging: natsClient,

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/hpetrov29/resttemplate/business/data/cache"
 	"github.com/hpetrov29/resttemplate/business/data/dbnosql"
 	"github.com/hpetrov29/resttemplate/business/data/messaging"
 	"github.com/hpetrov29/resttemplate/business/web/v1/auth"
@@ -19,6 +20,7 @@ type APIMuxConfig struct {
 	Shutdown 	chan os.Signal
 	Log      	*logger.Logger
 	Auth	 	*auth.Auth
+	Cache 		cache.Cache
 	SQLDB       *sqlx.DB
 	NOSQLDB 	dbnosql.NOSQLDB
 	Messaging 	messaging.MessagingQueue
