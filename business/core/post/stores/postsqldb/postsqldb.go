@@ -105,7 +105,36 @@ func (s *Store) QueryById(ctx context.Context, id int64) (post.Post, error) {
 	}
 
 	const postQuery = `SELECT id, user_id, title, description, front_image, content_id, created_at, updated_at FROM posts WHERE id = :id;`
-	const commentsQuery = `WITH RECURSIVE comment_tree AS (SELECT id, user_id, parent_id, content, created_at, 1 AS level FROM comments WHERE post_id = :id AND parent_id IS NULL UNION ALL SELECT c.id, c.user_id, c.parent_id, c.content, c.created_at, ct.level + 1 FROM comments c INNER JOIN comment_tree ct ON c.parent_id = ct.id) SELECT id, user_id, parent_id, content, created_at FROM comment_tree ORDER BY level ASC, created_at ASC;`
+	const commentsQuery = `WITH RECURSIVE ordComments AS
+							(SELECT * ,
+									row_number() OVER (PARTITION BY coalesce(parent_id, 0)
+														ORDER BY created_at) rn
+							FROM comments),
+										r AS
+							(SELECT 0 AS lvl,
+									id AS root,
+									t.*
+							FROM ordComments t
+							WHERE parent_id IS NULL
+								AND rn<6
+							UNION ALL SELECT lvl+1 AS lvl,
+												r.root,
+												t.*
+							FROM r
+							INNER JOIN ordComments t ON t.parent_id=r.id
+							AND t.rn<6
+							)
+							SELECT 
+								r.id,
+								r.user_id,
+								r.parent_id,
+								r.content,
+								r.created_at,
+								r.root,
+								r.lvl
+							FROM r
+							ORDER BY root,
+									lvl`
 	
 	var dbPost dbPost
 	var dbComments []dbComment
