@@ -14,6 +14,8 @@ type Comment struct {
 	ParentId 	sql.NullInt64 		`db:"parent_id"`
 	Content   	string 				`db:"content"`
 	CreatedAt 	time.Time 			`db:"created_at"`
+	Level 		int 				`db:"lvl"`
+	Root 		int 				`db:"root"`
 }
 
 func toDBComment(c comment.Comment) Comment {

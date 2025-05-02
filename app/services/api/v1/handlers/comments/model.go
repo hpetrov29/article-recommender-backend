@@ -45,6 +45,15 @@ func toAppComment(c comment.Comment) AppComment {
 	}
 }
 
+// Converts a slice of comment.Comment (core layer) to a slice of comment.AppComment (app layer)
+func toAppComments(comments []comment.Comment) []AppComment {
+	items := make([]AppComment, len(comments))
+	for i, comment := range comments {
+		items[i] = toAppComment(comment)
+	}
+	return items
+}
+
 // DeleteComment represents the contents that need to be decoded from the request
 // body in the app layer for comment deletion.
 type DeleteComment struct {

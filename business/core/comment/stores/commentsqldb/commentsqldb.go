@@ -85,3 +85,61 @@ func (s *Store) Delete(ctx context.Context, id uint64) (error) {
 
 	return nil
 }
+
+// QueryByPostId fetches the comment tree of the corresponding post from the database.
+// It fetches up to 5 root-level comments and, for each comment, up to 5 children recursively, 
+// to a maximum depth of 5 levels.
+//
+// Parameters:
+//   - ctx: the context for managing timeouts and cancellations.
+//   - id: the id of the post whose comment tree will be fetched.
+//
+// Returns:
+//   - []Comment: the comment tree in a flat list
+//   - error: an error if the fetch fails.
+func (s *Store) QueryByPostId(ctx context.Context, id int64) ([]comment.Comment, error) {
+	data := struct {
+		Id int64 `db:"id"`
+	}{
+		Id: id,
+	}
+
+	const q = `WITH RECURSIVE ordComments AS
+							(SELECT * ,
+									row_number() OVER (PARTITION BY coalesce(parent_id, 0)
+														ORDER BY created_at) rn
+							FROM comments),
+										r AS
+							(SELECT 0 AS lvl,
+									id AS root,
+									t.*
+							FROM ordComments t
+							WHERE post_id = :id 
+								AND parent_id IS NULL
+								AND rn<6
+							UNION ALL SELECT lvl+1 AS lvl,
+												r.root,
+												t.*
+							FROM r
+							INNER JOIN ordComments t ON t.parent_id=r.id
+							AND t.rn<6
+							)
+							SELECT 
+								r.id,
+								r.user_id,
+								r.parent_id,
+								r.content,
+								r.created_at,
+								r.root,
+								r.lvl
+							FROM r
+							ORDER BY root,
+									lvl`
+	
+	var dbComments []Comment
+	if err := mysql.NamedQuerySlice(ctx, s.log, s.db, q, data, &dbComments); err != nil {
+		return []comment.Comment{}, fmt.Errorf("namedquerystruct: %w", err)
+	}
+
+	return ToCoreComments(dbComments), nil
+}

@@ -17,6 +17,7 @@ var (
 type Storer interface {
 	Create(ctx context.Context, comment Comment) (sql.Result, error)
 	Delete(ctx context.Context, id uint64) error
+	QueryByPostId(ctx context.Context, id int64) ([]Comment, error)
 }
 
 type IdGenerator interface {
@@ -74,3 +75,10 @@ func (c *Core) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
+func (c *Core) QueryByPostId(ctx context.Context, id int64) ([]Comment, error) {
+	comments, err := c.storer.QueryByPostId(ctx, id)
+	if err != nil {
+		return []Comment{}, err
+	}
+	return comments, nil
+}

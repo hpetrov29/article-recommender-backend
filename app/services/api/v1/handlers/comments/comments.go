@@ -77,3 +77,16 @@ func (h *Handlers) DeleteComment(ctx context.Context, w http.ResponseWriter, r *
 
 	return web.Respond(ctx, w, http.StatusOK, fmt.Sprintf("Deletion of comment with id: %d successful.", deleteComment.Id))
 }
+
+func (h *Handlers) GetComments(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	id, err := strconv.ParseInt(web.Param(r, "post_id"), 10, 64); if err != nil {
+		return web.Respond(ctx, w, http.StatusBadRequest, err)
+	}
+
+	comments, err := h.comment.QueryByPostId(ctx, id)
+	if err != nil {
+		return web.Respond(ctx, w, http.StatusInternalServerError, err)
+	}
+
+	return web.Respond(ctx, w, http.StatusOK, toAppComments(comments))
+}

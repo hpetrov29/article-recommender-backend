@@ -36,6 +36,9 @@ func Routes(app *web.App, cfg Config) {
 
 	authenticated := middleware.Authenticate(cfg.Auth)
 
+	//UNPROTECTED ROUTES
+	app.Handle(http.MethodGet, "/comments/{post_id}", handlers.GetComments)
+
 	// PROTECTED ROUTES
 	app.Handle(http.MethodPost, "/comment/{post_id}", handlers.CreateComment, authenticated)
 	app.Handle(http.MethodDelete, "/comment", handlers.DeleteComment, authenticated)
