@@ -49,15 +49,3 @@ func (s *Store) QueryPostById(ctx context.Context, id int64) (post.Post, bool, e
 	}
 	return toCorePost(postData), true, nil
 }
-
-func (s *Store) CreateComments(context.Context, int64, []post.Comment) error {
-	return nil
-}
-
-func (s *Store) QueryCommensByPostId(context.Context, int64) ([]post.Comment, error) {
-	return []post.Comment{}, nil
-}
-
-func (s *Store) DeleteCommentsByPostId(context.Context, int64) error {
-	return nil
-}

@@ -59,40 +59,26 @@ func (o *Store) Delete(ctx context.Context, post post.Post) error {
 }
 
 func (o *Store) QueryById(ctx context.Context, id int64) (post.Post, error) {
-	// first, check if post is in cache
-	// second, if not in cache, get the metadata from the sql store
-	// third, get the post's content from nosql store
-	var p post.Post
-	
 	p, ok, err := o.Cache.QueryPostById(ctx, id); if err != nil {
 		return post.Post{}, err
 	}
-	if !ok {
-		p, err = o.SQL.QueryById(ctx, id)
-		if err != nil {
-			return post.Post{}, err
-		}
 
-		content, err := o.NOSQL.QueryById(ctx, p.ContentId)
-		if err != nil {
-			return post.Post{}, err
-		}
-
-		p.Content = content
-
-		if err = o.Cache.CreatePost(ctx, p); err != nil {
-			return post.Post{}, err
-		}
-
-		if err = o.Cache.CreateComments(ctx, p.Id, p.Comments); err != nil {
-			return post.Post{}, err
-		}
-
+	if ok {
 		return p, nil
 	}
-
-	comments, _ := o.Cache.QueryCommensByPostId(ctx, p.Id)
-	p.Comments = comments
+	
+	p, err = o.SQL.QueryById(ctx, id)
+	if err != nil {
+		return post.Post{}, err
+	}
+	content, err := o.NOSQL.QueryById(ctx, p.ContentId)
+	if err != nil {
+		return post.Post{}, err
+	}
+	p.Content = content
+	if err = o.Cache.CreatePost(ctx, p); err != nil {
+		return post.Post{}, err
+	}
 
 	return p, nil
 }

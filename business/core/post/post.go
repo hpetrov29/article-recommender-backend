@@ -26,9 +26,6 @@ type CacheStore interface {
 	CreatePost(context.Context, Post) (error)
 	QueryPostById(context.Context, int64) (Post, bool, error)
 	DeletePost(context.Context, int64) error
-	CreateComments(context.Context, int64, []Comment) error
-	QueryCommensByPostId(context.Context, int64) ([]Comment, error)
-	DeleteCommentsByPostId(context.Context, int64) error
 }
 
 type SQLstore interface {
