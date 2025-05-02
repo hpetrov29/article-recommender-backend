@@ -1,7 +1,6 @@
 package postsqldb
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/hpetrov29/resttemplate/business/core/post"
@@ -57,40 +56,4 @@ func toCorePostSlice(dbPosts []dbPost) []post.Post {
 		prds[i] = toCorePost(dbPost)
 	}
 	return prds
-}
-
-// =============================================================================
-
-// dbComemnt represents the structure used to transfer comment data
-// associated to a post between the core and repository layers
-type dbComment struct {
-	Id     	   	int64 				`db:"id"`
-	UserId 		int64 				`db:"user_id"`
-	ParentId 	sql.NullInt64 		`db:"parent_id"`
-	Content   	string 				`db:"content"`
-	CreatedAt 	time.Time 			`db:"created_at"`
-	Level 		int 				`db:"lvl"`
-	Root 		int 				`db:"root"`
-}
-
-// Converts dbComment (repository layer) to post.Comment (core layer)
-func toCoreComment(c dbComment) post.Comment {
-	return post.Comment{
-		Id:        c.Id,
-		UserId:    c.UserId,
-		ParentId:  c.ParentId.Int64,
-		Content:   c.Content,
-		CreatedAt: c.CreatedAt,
-	}
-}
-
-// Converts a slice of dbComment (repository layer) to a slice of post.Comment (core layer)
-func toCoreComments(comments []dbComment) []post.Comment {
-	slice := make([]post.Comment, len(comments))
-
-	for i, c := range comments {
-		slice[i] = toCoreComment(c)
-	}
-
-	return slice
 }

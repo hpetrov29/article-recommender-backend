@@ -16,7 +16,6 @@ type AppPost struct {
 	FrontImage  	string 			`json:"frontImage"`
 	ContentId   	int64   		`json:"contentId"`
 	Content   		*AppContent   	`json:"content,omitempty"`
-	Comments        []AppComment 	`json:"comments,omitempty"`
 	CreatedAt   	string   		`json:"createdAt"`
 	UpdatedAt  		string   		`json:"updatedAt"`
 }
@@ -30,7 +29,6 @@ func toAppPost(post post.Post) AppPost {
 	FrontImage:		post.FrontImage,
 	ContentId: 		post.ContentId,
 	Content: 		toAppContent(post.Content),
-	Comments: 		toAppComments(post.Comments),
 	CreatedAt: 		post.CreatedAt.Format(time.RFC3339),
 	UpdatedAt:  	post.UpdatedAt.Format(time.RFC3339),
 	}
@@ -187,38 +185,4 @@ func toAppStyles(styles []post.Style) []AppStyle {
 		}
 	}
 	return converted
-}
-
-// =============================================================================
-// Comment related models and functions
-
-// AppComment represents the contents of a post comment in the app layer.
-type AppComment struct {
-	Id     	   	int64 		`json:"id"`
-	UserId 		int64 		`json:"userId"`
-	ParentId 	int64 		`json:"parentId"`
-	Content   	string 		`json:"content"`
-	CreatedAt 	time.Time 	`json:"createdAt"`
-}
-
-// Converts post.Comment (core layer) to AppComment (app layer)
-func toAppComment(comment post.Comment) AppComment {
-	return AppComment{
-		Id: comment.Id,
-		UserId: comment.UserId,
-		ParentId: comment.ParentId,
-		Content: comment.Content,
-		CreatedAt: comment.CreatedAt,
-	}
-}
-
-// Converts a slice of post.Comment (core layer) to a slice of AppComment (app layer)
-func toAppComments(comments []post.Comment) []AppComment {
-	slice := make([]AppComment, len(comments))
-
-	for i, c := range comments {
-		slice[i] = toAppComment(c)
-	}
-
-	return slice
 }

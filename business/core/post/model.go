@@ -16,7 +16,6 @@ type Post struct {
 	FrontImage  string
 	ContentId   int64
 	Content 	Content
-	Comments 	[]Comment
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -58,16 +57,4 @@ type Style struct {
 	Offset int
 	Length int
 	Style  string
-}
-
-// =============================================================================
-// Comment content related models
-
-// Comment struct contains all information about a comment associated to a post
-type Comment struct {
-	Id     	   	int64
-	UserId 		int64
-	ParentId 	int64
-	Content   	string
-	CreatedAt 	time.Time
 }
